@@ -8,7 +8,7 @@ const API_KEY = "AIzaSyA_mBu6emRKASkqHpLtwkdBiCQKYO3rvcw";
 const FOLDER_ID = "1jRyVReP4cq7yk1VqwdFCMt0w4on4S77Q";
 
 /* ===============================
-   OPTIMIZED CHROMA KEY SHADER
+   OPTIMIZED CHROMA KEY SHADER 
 ================================ */
 AFRAME.registerShader('chromakey', {
   schema: {
