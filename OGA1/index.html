@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR Memory | Upload</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+  :root { --neon: #00ff99; --neon-muted: rgba(0, 255, 153, 0.15); --bg-black: #080808; --surface: #121212; }
+  body { margin: 0; padding: 20px 0; font-family: 'Space Grotesk', sans-serif; background-color: var(--bg-black); color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  .card-elite { width: 90%; max-width: 380px; background: var(--surface); border-radius: 35px; padding: 30px 20px; box-shadow: 0 0 50px rgba(0,0,0,1); text-align: center; border: 1px solid #222; box-sizing: border-box; }
+  
+  /* Flexible container - NOT fixed 1:1 */
+  .holo-zone { width: 100%; min-height: 200px; max-height: 420px; background: #000; border-radius: 20px; margin-bottom: 20px; border: 1px solid #222; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; overflow: hidden; }
+  #videoPreview { width: 100%; height: 100%; object-fit: contain; display: none; }
+  .upload-prompt { padding: 20px; }
+  
+  .btn-elite { width: 100%; padding: 18px; border-radius: 16px; border: none; background: #fff; color: #000; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+  .progress-wrap { margin-top: 20px; display: none; }
+  .bar-container { width: 100%; height: 2px; background: #222; }
+  .bar-fill { height: 100%; width: 0%; background: var(--neon); box-shadow: 0 0 10px var(--neon); transition: width 0.3s; }
+  #status-msg { margin-top: 10px; font-size: 11px; color: #666; text-transform: uppercase; }
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="card-elite">
+  <h2>Upload Memory</h2>
+  <p style="color:#666; font-size:13px; margin-bottom:20px;">Supports 16:9 Landscape & 9:16 Portrait</p>
+
+  <div class="holo-zone" id="holoZone" onclick="document.getElementById('videoFile').click()">
+    <div class="upload-prompt" id="promptText">
+      <div style="font-size: 32px;">⚡</div>
+      <div style="font-weight: 500; font-size: 13px; margin-top: 5px;">SELECT VIDEO</div>
+    </div>
+    <video id="videoPreview" autoplay muted loop playsinline></video>
+  </div>
+
+  <input type="hidden" id="productId">
+  <input type="file" id="videoFile" accept="video/*" onchange="previewFile(this)">
+  <button class="btn-elite" id="uploadBtn" onclick="initiateUpload()">Upload & Link</button>
+
+  <div class="progress-wrap" id="progressBox">
+    <div class="bar-container"><div class="bar-fill" id="progressBar"></div></div>
+    <div id="status-msg">Ready</div>
+  </div>
+</div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNKAn8M35cvtmqMULFQLO_ElaE164FFq-tYEeN18U4g8quH_PP8bdn2csZG0WzWKuK/exec";
+
+window.onload = () => {
+  const pId = new URLSearchParams(window.location.search).get("product");
+  if (pId) document.getElementById("productId").value = pId;
+};
+
+function previewFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const preview = document.getElementById('videoPreview');
+  const holoZone = document.getElementById('holoZone');
+  preview.src = URL.createObjectURL(file);
+  preview.onloadedmetadata = () => {
+    document.getElementById('promptText').style.display = 'none';
+    preview.style.display = 'block';
+    holoZone.style.aspectRatio = `${preview.videoWidth} / ${preview.videoHeight}`;
+  };
+}
+
+async function compressVideo(file, onProgress) {
+  return new Promise((resolve) => {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
+      resolve({ blob: file, isCompressed: false });
+      return;
+    }
+
+    const video = document.createElement('video');
+    video.src = URL.createObjectURL(file);
+    video.muted = true;
+    video.playsInline = true;
+
+    video.onloadedmetadata = () => {
+      const origW = video.videoWidth;
+      const origH = video.videoHeight;
+      const maxDim = 720;
+      let targetW, targetH;
+
+      // 16:9 Landscape vs 9:16 Portrait scaling
+      if (origW >= origH) {
+        targetW = origW > maxDim ? maxDim : origW;
+        targetH = Math.round(targetW * (origH / origW));
+      } else {
+        targetH = origH > maxDim ? maxDim : origH;
+        targetW = Math.round(targetH * (origW / origH));
+      }
+
+      // Codecs require even dimensions
+      targetW = targetW % 2 === 0 ? targetW : targetW - 1;
+      targetH = targetH % 2 === 0 ? targetH : targetH - 1;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      const stream = canvas.captureStream(30);
+
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const src = audioCtx.createMediaElementSource(video);
+        const dest = audioCtx.createMediaStreamDestination();
+        src.connect(dest);
+        if (dest.stream.getAudioTracks().length > 0) stream.addTrack(dest.stream.getAudioTracks()[0]);
+      } catch (e) {}
+
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' : 'video/webm';
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 1200000 });
+      } catch (e) {
+        resolve({ blob: file, isCompressed: false });
+        return;
+      }
+
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => resolve({ blob: new Blob(chunks, { type: 'video/webm' }), isCompressed: true });
+
+      video.play();
+      recorder.start();
+
+      function drawFrame() {
+        if (!video.paused && !video.ended) {
+          ctx.drawImage(video, 0, 0, targetW, targetH);
+          if (video.duration && onProgress) {
+            onProgress(Math.min(Math.round((video.currentTime / video.duration) * 100), 100));
+          }
+          requestAnimationFrame(drawFrame);
+        }
+      }
+      drawFrame();
+      video.onended = () => recorder.stop();
+      video.onerror = () => resolve({ blob: file, isCompressed: false });
+    };
+    video.onerror = () => resolve({ blob: file, isCompressed: false });
+  });
+}
+
+function fileToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+  });
+}
+
+async function initiateUpload() {
+  const file = document.getElementById("videoFile").files[0];
+  const pId = document.getElementById("productId").value;
+  const status = document.getElementById("status-msg");
+  const bar = document.getElementById("progressBar");
+  const box = document.getElementById("progressBox");
+  const btn = document.getElementById("uploadBtn");
+
+  if (!file) return;
+  btn.disabled = true;
+  box.style.display = "block";
+  bar.style.width = "10%";
+  status.innerText = "Processing aspect ratio...";
+
+  try {
+    const { blob, isCompressed } = await compressVideo(file, (p) => {
+      bar.style.width = `${Math.round(p * 0.5)}%`;
+      status.innerText = `Optimizing (${p}%)...`;
+    });
+
+    bar.style.width = "60%";
+    const base64 = await fileToBase64(blob);
+    const finalExt = isCompressed ? ".webm" : (file.name.substring(file.name.lastIndexOf('.')) || ".mp4");
+    const cleanFileName = file.name.replace(/\.[^/.]+$/, "") + finalExt;
+
+    bar.style.width = "75%";
+    status.innerText = "Saving video...";
+
+    await fetch(WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId: pId, file: base64, fileName: cleanFileName })
+    });
+
+    bar.style.width = "100%";
+    status.style.color = "var(--neon)";
+    status.innerText = "Completed!";
+    btn.innerText = "Linked";
+  } catch (err) {
+    status.innerText = "Upload failed. Try again.";
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
