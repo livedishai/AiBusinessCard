@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JEWELS-AI | Live Drive AR</title>
 
-  <!-- A-Frame & MindAR -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    /* RESET & BASE STYLES */
     body {
       margin: 0;
       background: #000;
@@ -18,7 +16,6 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* THE BLACK CURTAIN */
     #blackCurtain {
       position: fixed;
       top: 0;
@@ -26,14 +23,14 @@
       width: 100vw;
       height: 100vh;
       background: #000;
-      z-index: 99999;
+      z-index: 9999;
       display: flex;
       justify-content: center;
       align-items: center;
       transition: opacity 0.5s ease;
+      pointer-events: none; /* Prevents blocking clicks if stuck */
     }
 
-    /* CUSTOM LOADER */
     #loader {
       color: white;
       text-align: center;
@@ -44,12 +41,10 @@
     }
 
     @keyframes pulse {
-      0% { opacity: 0.4; }
+      0%, 100% { opacity: 0.4; }
       50% { opacity: 1; }
-      100% { opacity: 0.4; }
     }
 
-    /* BUTTON PANEL STYLES */
     .button-panel {
       position: absolute;
       bottom: 30px;
@@ -70,21 +65,15 @@
       cursor: pointer;
       min-width: 180px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transition: transform 0.1s ease;
     }
 
-    .plan-button:active {
-      transform: scale(0.95);
-    }
-
-    /* INSTAGRAM BUTTON */
     #instagramButton {
       position: fixed;
       bottom: 25px;
       right: 25px;
       width: 50px;
       height: 50px;
-      z-index: 100000;
+      z-index: 1000;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -92,7 +81,6 @@
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transition: transform 0.2s ease, opacity 0.2s ease;
       text-decoration: none;
     }
 
@@ -101,50 +89,29 @@
       height: 35px;
     }
 
-    #instagramButton:hover {
-      transform: scale(1.1);
-    }
-
-    #instagramButton:active {
-      transform: scale(0.95);
-    }
-
-    /* FORCE-HIDE ANY STRAY MINDAR UI */
-    [class^="mindar-ui"],
-    [id^="mindar-ui"],
-    .mindar-ui-overlay {
+    /* Hide only MindAR overlay icons without killing camera DOM */
+    .mindar-ui-loading, .mindar-ui-compatibility {
       display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-    }
-
-    /* SCENE & CANVAS RESET */
-    a-scene, .a-canvas {
-      background-color: #000 !important;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Loading Screen -->
   <div id="blackCurtain">
-    <div id="loader">Initializing AI Engine...</div>
+    <div id="loader">Initializing Camera & AR...</div>
   </div>
 
-  <!-- Instagram Floating Link -->
   <a href="https://www.instagram.com/overlay_gifts_ai/" target="_blank" id="instagramButton">
     <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
   </a>
 
-  <!-- AR Action Controls -->
   <div class="button-panel" id="planButtons">
     <button class="plan-button" id="toggleButton">▶️ Play Video</button>
   </div>
 
-  <!-- A-Frame AR Scene -->
   <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no;"
+    mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; filterMinCF:0.0001; filterBeta: 0.001;"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
     renderer="antialias: true; alpha: true">
@@ -171,96 +138,25 @@
         material="src: #driveVideo; side: double; transparent: true">
       </a-plane>
     </a-entity>
-
   </a-scene>
 
   <script>
-    /* ===============================
-       CONFIGURATION
-    ================================ */
     const API_KEY = "AIzaSyA_mBu6emRKASkqHpLtwkdBiCQKYO3rvcw"; 
     const FOLDER_ID = "1jRyVReP4cq7yk1VqwdFCMt0w4on4S77Q";
 
-    /* ===============================
-       OPTIMIZED CHROMA KEY SHADER
-    ================================ */
-    AFRAME.registerShader('chromakey', {
-      schema: {
-        src: { type: 'map' },
-        color: { type: 'color', default: '#00FF00' },
-        threshold: { type: 'number', default: 0.3 },
-        smoothness: { type: 'number', default: 0.05 }
-      },
-
-      init: function (data) {
-        const videoTexture = new THREE.VideoTexture(data.src);
-        videoTexture.minFilter = THREE.LinearFilter;
-        videoTexture.magFilter = THREE.LinearFilter;
-        videoTexture.generateMipmaps = false;
-        videoTexture.format = THREE.RGBAFormat;
-
-        this.material = new THREE.ShaderMaterial({
-          uniforms: {
-            tex: { value: videoTexture },
-            keyColor: { value: new THREE.Color(data.color) },
-            similarity: { value: data.threshold },
-            smoothness: { value: data.smoothness }
-          },
-          vertexShader: `
-            varying vec2 vUv;
-            void main() {
-              vUv = uv;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `,
-          fragmentShader: `
-            uniform sampler2D tex;
-            uniform vec3 keyColor;
-            uniform float similarity;
-            uniform float smoothness;
-            varying vec2 vUv;
-            void main() {
-              vec4 videoColor = texture2D(tex, vUv);
-              float diff = distance(videoColor.rgb, keyColor);
-              float alpha = smoothstep(similarity, similarity + smoothness, diff);
-              if (alpha < 0.1) discard;
-              gl_FragColor = vec4(videoColor.rgb, alpha);
-            }
-          `,
-          transparent: true
-        });
-      },
-
-      update: function (data) {
-        this.material.uniforms.similarity.value = data.threshold;
-        this.material.uniforms.smoothness.value = data.smoothness;
-        this.material.uniforms.keyColor.value = new THREE.Color(data.color);
-      }
-    });
-
-    /* ===============================
-       FRESH DRIVE FETCH (NO CACHE)
-    ================================ */
     async function getLatestVideoId() {
       try {
         const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'video/'&orderBy=modifiedTime desc&pageSize=1&fields=files(id)&key=${API_KEY}`;
         const response = await fetch(url);
         const data = await response.json();
-
-        if (data.files && data.files.length > 0) {
-          return data.files[0].id;
-        }
-        return null;
+        return (data.files && data.files.length > 0) ? data.files[0].id : null;
       } catch (error) {
         console.error("Drive Fetch Error:", error);
         return null;
       }
     }
 
-    /* ===============================
-       AR INTERACTION LOGIC
-    ================================ */
-    window.addEventListener("load", async () => {
+    window.addEventListener("load", () => {
       const videoEl = document.querySelector("#driveVideo");
       const videoPlane = document.querySelector("#videoPlane");
       const target = document.querySelector("#target1");
@@ -271,68 +167,47 @@
 
       let isPlaying = false;
 
-      // Cleanup stray MindAR UI elements
-      const uiKiller = setInterval(() => {
-        const uiElements = document.querySelectorAll('[class^="mindar-ui"], [id^="mindar-ui"]');
-        uiElements.forEach(el => el.remove());
-      }, 100);
+      function dismissCurtain() {
+        if (curtain) {
+          curtain.style.opacity = "0";
+          setTimeout(() => { curtain.style.display = "none"; }, 500);
+        }
+      }
 
-      // Dynamic Aspect Ratio Calculation
+      // Hide black screen as soon as AR engine or camera initializes
+      sceneEl.addEventListener("arReady", dismissCurtain);
+      sceneEl.addEventListener("arError", (err) => {
+        console.error("MindAR failed to start:", err);
+        dismissCurtain();
+      });
+
+      // Aspect ratio auto-fit
       function adjustPlaneToVideoRatio() {
         if (!videoPlane || !videoEl) return;
-
         const w = videoEl.videoWidth;
         const h = videoEl.videoHeight;
 
         if (w > 0 && h > 0) {
           const aspectRatio = w / h;
-          let targetWidth, targetHeight;
-
-          if (aspectRatio >= 1) {
-            targetWidth = 1;
-            targetHeight = 1 / aspectRatio;
-          } else {
-            targetWidth = aspectRatio;
-            targetHeight = 1;
-          }
+          const targetWidth = aspectRatio >= 1 ? 1 : aspectRatio;
+          const targetHeight = aspectRatio >= 1 ? (1 / aspectRatio) : 1;
 
           videoPlane.setAttribute('geometry', {
             primitive: 'plane',
             width: targetWidth,
             height: targetHeight
           });
-
-          const mesh = videoPlane.getObject3D('mesh');
-          if (mesh && mesh.geometry) {
-            mesh.geometry.dispose();
-            mesh.geometry = new THREE.PlaneGeometry(targetWidth, targetHeight);
-          }
         }
       }
 
-      // Metadata & play listeners
       videoEl.addEventListener('loadedmetadata', adjustPlaneToVideoRatio);
-      videoEl.addEventListener('canplay', adjustPlaneToVideoRatio);
       videoEl.addEventListener('playing', () => {
         adjustPlaneToVideoRatio();
         if (videoPlane) videoPlane.setAttribute('visible', 'true');
       });
 
-      // Scene Ready
-      sceneEl.addEventListener("arReady", () => {
-        if (curtain) {
-          curtain.style.opacity = "0";
-          setTimeout(() => {
-            curtain.style.display = "none";
-            clearInterval(uiKiller);
-          }, 500);
-        }
-      });
-
-      // Marker Tracking Events
       target.addEventListener("targetFound", async () => {
         buttonsContainer.style.display = "block";
-
         const fileId = await getLatestVideoId();
         if (fileId) {
           const newSrc = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
@@ -351,7 +226,6 @@
         toggleButton.textContent = "▶️ Play Video";
       });
 
-      // Play/Pause Button
       toggleButton.addEventListener("click", async () => {
         try {
           if (!isPlaying) {
@@ -369,8 +243,6 @@
         }
       });
     });
-
-    document.addEventListener("contextmenu", (e) => e.preventDefault());
   </script>
 </body>
 </html>
