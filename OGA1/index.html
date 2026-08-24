@@ -2,187 +2,260 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bakery & Cake AR Experience | Indian Bakery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>JEWELS-AI | Live Drive AR</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      background: #000;
-      overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      user-select: none;
-      -webkit-user-select: none;
+    :root {
+      --deep: #130821;
+      --deep-2: #1f0d33;
+      --brand-purple: #5E0F8B;
+      --brand-purple-dark: #2c0a49;
+      --gold: #D4AF37;
+      --gold-soft: #F0D687;
+      --cream: #F5EFE6;
+      --cream-dim: rgba(245, 239, 230, 0.62);
+      --glass: rgba(245, 239, 230, 0.08);
+      --glass-border: rgba(212, 175, 55, 0.35);
     }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--deep);
+      overflow: hidden;
+      font-family: 'Manrope', sans-serif;
+      color: var(--cream);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ---------- Loading curtain ---------- */
     #blackCurtain {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #000;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 40%, var(--deep-2) 0%, var(--deep) 70%);
       z-index: 9999;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      transition: opacity 0.5s ease;
+      gap: 22px;
+      transition: opacity 0.6s ease;
       pointer-events: none;
     }
 
+    .gem-loader {
+      width: 56px;
+      height: 56px;
+      animation: gemSpin 2.6s ease-in-out infinite;
+    }
+
+    .gem-loader path {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.4;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 6px rgba(212,175,55,0.55));
+    }
+
+    @keyframes gemSpin {
+      0%   { transform: rotate(0deg) scale(1); }
+      50%  { transform: rotate(180deg) scale(1.08); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
     #loader {
-      color: white;
-      text-align: center;
-      font-size: 18px;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-style: italic;
+      font-size: 19px;
       letter-spacing: 2px;
+      color: var(--cream);
+      text-align: center;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    #loader span {
+      display: block;
+      font-family: 'Manrope', sans-serif;
+      font-style: normal;
+      font-size: 10px;
+      letter-spacing: 4px;
       text-transform: uppercase;
-      animation: pulse 1.5s infinite;
+      color: var(--gold-soft);
+      margin-top: 6px;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 0.4; }
+      0%, 100% { opacity: 0.55; }
       50% { opacity: 1; }
     }
 
-    /* Video Control Panel */
-    .button-panel {
-      position: absolute;
-      bottom: 25px;
+    /* ---------- Brand mark ---------- */
+    #brandMark {
+      position: fixed;
+      top: max(18px, env(safe-area-inset-top));
       left: 50%;
       transform: translateX(-50%);
-      display: none;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: var(--gold-soft);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #brandMark::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+
+    /* ---------- Scan hint / viewfinder ---------- */
+    #scanHint {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 400;
+      width: min(64vw, 260px);
+      aspect-ratio: 1;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    #scanHint .corner {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--gold);
+      opacity: 0.85;
+    }
+    #scanHint .tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 6px 0 0 0; }
+    #scanHint .tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 6px 0 0; }
+    #scanHint .bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 6px; }
+    #scanHint .br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 6px 0; }
+
+    #scanHint .scanline {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      box-shadow: 0 0 8px var(--gold);
+      animation: scanMove 2.2s ease-in-out infinite;
+    }
+
+    @keyframes scanMove {
+      0%   { top: 6%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 92%; opacity: 0; }
+    }
+
+    #scanHint p {
+      position: absolute;
+      bottom: -34px;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+    }
+
+    body.found #scanHint,
+    body.found #brandMark {
+      opacity: 0;
+    }
+
+    /* ---------- Bottom control panel ---------- */
+    .button-panel {
+      position: fixed;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      display: flex;
+      opacity: 0;
       z-index: 100;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+    }
+
+    body.found .button-panel {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
     }
 
     .plan-button {
-      padding: 12px 24px;
-      font-size: 15px;
-      font-weight: bold;
-      border: none;
-      border-radius: 25px;
-      background: linear-gradient(135deg, #d35400 0%, #c0392b 100%);
-      color: #fff;
+      position: relative;
+      overflow: hidden;
+      padding: 15px 34px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+      color: var(--cream);
       cursor: pointer;
-      min-width: 160px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      transition: transform 0.2s;
+      min-width: 200px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .plan-button:active {
-      transform: scale(0.96);
+      transform: scale(0.97);
     }
 
-    /* Top Floating Bakery Contact & Order Bar */
-    #quickActionBar {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      gap: 10px;
-      z-index: 1000;
-      background: rgba(20, 20, 20, 0.8);
-      padding: 8px 14px;
-      border-radius: 30px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      animation: fadeInDown 0.4s ease-out;
+    .plan-button::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -60%;
+      width: 40%; height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(212,175,55,0.35), transparent);
+      transform: skewX(-20deg);
+      animation: shimmer 3.2s ease-in-out infinite;
     }
 
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translate(-50%, -20px); }
-      to { opacity: 1; transform: translate(-50%, 0); }
+    @keyframes shimmer {
+      0%   { left: -60%; }
+      45%  { left: 130%; }
+      100% { left: 130%; }
     }
 
-    .action-icon-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff;
-      text-decoration: none;
-      font-size: 17px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .action-icon-btn:hover {
-      background: #e67e22;
-      transform: translateY(-2px);
-    }
-
-    /* Cake Flavor Picker Controls */
-    #flavorPicker {
-      position: fixed;
-      top: 75px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      gap: 8px;
-      z-index: 1000;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 6px 12px;
-      border-radius: 20px;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .flavor-btn {
-      padding: 5px 12px;
-      font-size: 11px;
-      font-weight: bold;
-      border-radius: 14px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      color: #fff;
-      transition: transform 0.2s;
-    }
-
-    .flv-choco { background: #3d2314; }
-    .flv-velvet { background: #8e1a24; }
-    .flv-vanilla { background: #f5eedc; color: #222; }
-
-    .flavor-btn:active {
-      transform: scale(0.92);
-    }
-
-    /* Interactive Candle Blow / Light Button */
-    #candleToggleBtn {
-      position: fixed;
-      bottom: 25px;
-      left: 25px;
-      width: 50px;
-      height: 50px;
-      z-index: 1000;
-      cursor: pointer;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 50%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      font-size: 24px;
-      border: 3px solid #e67e22;
-      transition: transform 0.2s;
-    }
-
-    #candleToggleBtn:active {
-      transform: scale(0.9);
-    }
-
+    /* ---------- Instagram / social button ---------- */
     #instagramButton {
       position: fixed;
-      bottom: 25px;
-      right: 25px;
+      bottom: max(25px, env(safe-area-inset-bottom));
+      right: 20px;
       width: 48px;
       height: 48px;
       z-index: 1000;
@@ -190,15 +263,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
       text-decoration: none;
+      transition: transform 0.15s ease;
     }
 
+    #instagramButton:active { transform: scale(0.93); }
+
     #instagramButton img {
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
+      filter: sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.15);
     }
 
     /* REMOVE A-FRAME VR BUTTON COMPLETELY */
@@ -213,47 +293,48 @@
     .mindar-ui-loading, .mindar-ui-compatibility {
       display: none !important;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gem-loader, #loader, #scanHint .scanline, .plan-button::after {
+        animation: none !important;
+      }
+    }
   </style>
 </head>
 
 <body>
 
   <div id="blackCurtain">
-    <div id="loader">Baking Your AR Experience...</div>
+    <svg class="gem-loader" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 4 L48 20 L28 52 L8 20 Z M8 20 L48 20 M18 20 L28 4 L38 20 M18 20 L28 52 M38 20 L28 52" />
+    </svg>
+    <div id="loader">Initializing<span>Camera &amp; AR</span></div>
   </div>
 
-  <!-- Bakery Action Hub -->
-  <div id="quickActionBar">
-    <a href="https://wa.me/919999999999?text=Hi%20Indian%20Bakery,%20I%20would%20like%20to%20order%20a%20cake!" target="_blank" class="action-icon-btn" title="Order Cake on WhatsApp">🎂</a>
-    <a href="tel:+919999999999" class="action-icon-btn" title="Call Bakery">📞</a>
-    <button id="saveContactBtn" class="action-icon-btn" title="Save Bakery Contact">👤</button>
-    <a href="https://maps.google.com/?q=Indian+Bakery+Coonoor" target="_blank" class="action-icon-btn" title="Bakery Location">📍</a>
-    <a href="https://indianbakerycoonoor.com" target="_blank" class="action-icon-btn" title="Menu & Catalog">📜</a>
-  </div>
+  <div id="brandMark">JEWELS·AI</div>
 
-  <!-- 3D Cake Flavor Customizer -->
-  <div id="flavorPicker">
-    <button class="flavor-btn flv-choco" onclick="setCakeFlavor('#3D2314', '#5A331E')">Chocolate</button>
-    <button class="flavor-btn flv-velvet" onclick="setCakeFlavor('#8E1A24', '#C0392B')">Red Velvet</button>
-    <button class="flavor-btn flv-vanilla" onclick="setCakeFlavor('#FFF8DC', '#F0E68C')">Vanilla Cream</button>
+  <div id="scanHint">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="scanline"></div>
+    <p>Align with drive card</p>
   </div>
-
-  <!-- Light / Blow Candle Button -->
-  <button id="candleToggleBtn" title="Toggle Candle Flame">🕯️</button>
 
   <a href="https://www.instagram.com/overlay_gifts_ai/" target="_blank" id="instagramButton">
     <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
   </a>
 
   <div class="button-panel" id="planButtons">
-    <button class="plan-button" id="toggleButton">▶️ Play Video</button>
+    <button class="plan-button" id="toggleButton">▶ Play Video</button>
   </div>
 
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; filterMinCF:0.0001; filterBeta: 0.001;"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    renderer="antialias: true; alpha: true; preserveDrawingBuffer: true">
+    renderer="antialias: true; alpha: true">
 
     <a-assets>
       <video
@@ -269,8 +350,6 @@
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity id="target1" mindar-image-target="targetIndex: 0">
-      
-      <!-- Video Surface (Untouched) -->
       <a-plane
         id="videoPlane"
         width="1"
@@ -278,93 +357,12 @@
         visible="false"
         material="src: #driveVideo; side: double; transparent: true">
       </a-plane>
-
-      <!-- 3D Interactive Celebration Cake (Floating over Top Edge of Card) -->
-      <a-entity id="cakeGroup" position="0 0.65 0.12" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear">
-        
-        <!-- Base Cake Stand -->
-        <a-cylinder radius="0.22" height="0.02" material="color: #ECEFF1; metalness: 0.7; roughness: 0.2" position="0 -0.01 0"></a-cylinder>
-
-        <!-- Tier 1 (Base Layer) -->
-        <a-cylinder id="cakeTier1" radius="0.18" height="0.10" position="0 0.05 0" material="color: #3D2314; roughness: 0.4"></a-cylinder>
-
-        <!-- Tier 2 (Middle Layer) -->
-        <a-cylinder id="cakeTier2" radius="0.13" height="0.08" position="0 0.14 0" material="color: #5A331E; roughness: 0.4"></a-cylinder>
-
-        <!-- Tier 3 (Top Layer) -->
-        <a-cylinder id="cakeTier3" radius="0.08" height="0.06" position="0 0.21 0" material="color: #3D2314; roughness: 0.4"></a-cylinder>
-
-        <!-- Cream / Cherry Toppings -->
-        <a-sphere radius="0.016" position="0 0.25 0.05" material="color: #D32F2F; roughness: 0.1"></a-sphere>
-        <a-sphere radius="0.016" position="0.05 0.25 0" material="color: #D32F2F; roughness: 0.1"></a-sphere>
-        <a-sphere radius="0.016" position="-0.05 0.25 0" material="color: #D32F2F; roughness: 0.1"></a-sphere>
-
-        <!-- Birthday Candle & Flame -->
-        <a-cylinder radius="0.008" height="0.06" position="0 0.27 0" material="color: #FFFFFF; roughness: 0.2"></a-cylinder>
-        <a-sphere
-          id="candleFlame"
-          radius="0.015"
-          position="0 0.31 0"
-          material="color: #FFB300; emissive: #FF6D00; emissiveIntensity: 1; opacity: 0.95"
-          animation="property: scale; to: 1.3 1.6 1.3; dir: alternate; loop: true; dur: 400">
-        </a-sphere>
-
-      </a-entity>
-
     </a-entity>
   </a-scene>
 
   <script>
     const API_KEY = "AIzaSyA_mBu6emRKASkqHpLtwkdBiCQKYO3rvcw"; 
     const FOLDER_ID = "1jRyVReP4cq7yk1VqwdFCMt0w4on4S77Q";
-
-    // Dynamic Cake Flavor Switcher
-    function setCakeFlavor(baseColor, secondaryColor) {
-      const tier1 = document.querySelector("#cakeTier1");
-      const tier2 = document.querySelector("#cakeTier2");
-      const tier3 = document.querySelector("#cakeTier3");
-
-      if (tier1) tier1.setAttribute("material", "color", baseColor);
-      if (tier2) tier2.setAttribute("material", "color", secondaryColor);
-      if (tier3) tier3.setAttribute("material", "color", baseColor);
-    }
-
-    // Toggle Candle Flame
-    let candleLit = true;
-    function toggleCandle() {
-      const flame = document.querySelector("#candleFlame");
-      const btn = document.querySelector("#candleToggleBtn");
-      if (flame) {
-        candleLit = !candleLit;
-        flame.setAttribute("visible", candleLit);
-        btn.textContent = candleLit ? "🕯️" : "✨";
-      }
-    }
-
-    // Bakery Contact vCard (.vcf)
-    function downloadVCard() {
-      const vcardData = [
-        "BEGIN:VCARD",
-        "VERSION:3.0",
-        "FN:Indian Bakery Coonoor - Cakes & Pastries",
-        "ORG:Indian Bakery Coonoor",
-        "TITLE:Bakery & Confectionery",
-        "TEL;TYPE=CELL:+919999999999",
-        "EMAIL:orders@indianbakerycoonoor.com",
-        "URL:https://indianbakerycoonoor.com",
-        "NOTE:Specialists in Customized Celebration Cakes, Fresh Pastries & Nilgiri Chocolates",
-        "END:VCARD"
-      ].join("\n");
-
-      const blob = new Blob([vcardData], { type: "text/vcard;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "IndianBakery_Contact.vcf");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
 
     async function getLatestVideoId() {
       try {
@@ -384,22 +382,15 @@
       const target = document.querySelector("#target1");
       const toggleButton = document.querySelector("#toggleButton");
       const buttonsContainer = document.querySelector("#planButtons");
-      const quickActionBar = document.querySelector("#quickActionBar");
-      const flavorPicker = document.querySelector("#flavorPicker");
-      const candleBtn = document.querySelector("#candleToggleBtn");
-      const saveContactBtn = document.querySelector("#saveContactBtn");
       const curtain = document.querySelector("#blackCurtain");
       const sceneEl = document.querySelector('a-scene');
 
       let isPlaying = false;
 
-      if (saveContactBtn) saveContactBtn.addEventListener("click", downloadVCard);
-      if (candleBtn) candleBtn.addEventListener("click", toggleCandle);
-
       function dismissCurtain() {
         if (curtain) {
           curtain.style.opacity = "0";
-          setTimeout(() => { curtain.style.display = "none"; }, 500);
+          setTimeout(() => { curtain.style.display = "none"; }, 600);
         }
       }
 
@@ -434,11 +425,8 @@
       });
 
       target.addEventListener("targetFound", async () => {
-        buttonsContainer.style.display = "block";
-        if (quickActionBar) quickActionBar.style.display = "flex";
-        if (flavorPicker) flavorPicker.style.display = "flex";
-        if (candleBtn) candleBtn.style.display = "flex";
-
+        document.body.classList.add("found");
+        buttonsContainer.style.display = "flex";
         const fileId = await getLatestVideoId();
         if (fileId) {
           const newSrc = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
@@ -450,15 +438,11 @@
       });
 
       target.addEventListener("targetLost", () => {
-        buttonsContainer.style.display = "none";
-        if (quickActionBar) quickActionBar.style.display = "none";
-        if (flavorPicker) flavorPicker.style.display = "none";
-        if (candleBtn) candleBtn.style.display = "none";
-
+        document.body.classList.remove("found");
         videoEl.pause();
         if (videoPlane) videoPlane.setAttribute('visible', 'false');
         isPlaying = false;
-        toggleButton.textContent = "▶️ Play Video";
+        toggleButton.textContent = "▶ Play Video";
       });
 
       toggleButton.addEventListener("click", async () => {
@@ -470,7 +454,7 @@
             isPlaying = true;
           } else {
             videoEl.pause();
-            toggleButton.textContent = "▶️ Play Video";
+            toggleButton.textContent = "▶ Play Video";
             isPlaying = false;
           }
         } catch (err) {
