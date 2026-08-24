@@ -17,8 +17,8 @@
       --bg: #0b0711;
       --gold: #D4AF37;
       --gold-bright: #FFE58F;
-      --glass: rgba(18, 12, 28, 0.78);
-      --glass-border: rgba(212, 175, 55, 0.35);
+      --glass: rgba(18, 12, 28, 0.85);
+      --glass-border: rgba(212, 175, 55, 0.4);
       --text: #FDFBF7;
     }
 
@@ -117,7 +117,7 @@
       opacity: 0;
     }
 
-    /* ---------- Bottom Experience Deck ---------- */
+    /* ---------- Bottom Control Deck ---------- */
     #deck {
       position: fixed;
       bottom: max(16px, env(safe-area-inset-bottom));
@@ -140,7 +140,7 @@
       pointer-events: auto;
     }
 
-    /* Product Selector Carousel Chips */
+    /* Category Chips */
     .chips-row {
       display: flex;
       gap: 8px;
@@ -152,18 +152,18 @@
 
     .chip-btn {
       flex: 0 0 auto;
-      padding: 7px 14px;
+      padding: 8px 14px;
       border-radius: 999px;
       background: var(--glass);
       border: 1px solid var(--glass-border);
       color: var(--text);
       font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.5px;
       display: flex;
       align-items: center;
       gap: 6px;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -172,10 +172,10 @@
       background: linear-gradient(135deg, #7b1fa2, #38006b);
       border-color: var(--gold);
       color: var(--gold-bright);
-      box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
     }
 
-    /* Primary Action Dock */
+    /* Actions Dock */
     .action-dock {
       display: flex;
       align-items: center;
@@ -212,9 +212,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       text-decoration: none;
       flex-shrink: 0;
+      cursor: pointer;
     }
 
     .icon-btn svg {
@@ -223,10 +225,8 @@
       fill: var(--gold-bright);
     }
 
-    /* Hidden File Input */
     #photoInput { display: none; }
 
-    /* Top Floating Badge */
     #topBadge {
       position: fixed;
       top: max(16px, env(safe-area-inset-top));
@@ -245,7 +245,6 @@
       pointer-events: none;
     }
 
-    /* MindAR & A-Frame standard UI overrides */
     .a-enter-vr, .a-enter-ar, .a-orientation-modal, .mindar-ui-loading, .mindar-ui-compatibility {
       display: none !important;
     }
@@ -270,9 +269,7 @@
     <div class="glow-laser"></div>
   </div>
 
-  <!-- Interactive Controls Deck -->
   <div id="deck">
-    <!-- Category Switcher -->
     <div class="chips-row">
       <button class="chip-btn active" data-product="mug">☕ Magic Mug</button>
       <button class="chip-btn" data-product="frame">🖼️ Wooden Frame</button>
@@ -280,27 +277,20 @@
       <button class="chip-btn" data-product="magnet">🧲 Video Magnet</button>
     </div>
 
-    <!-- Actions -->
     <div class="action-dock">
-      <!-- Upload Photo directly onto AR Gift -->
-      <button class="cta-btn" id="uploadBtn">
-        📸 Try Your Photo On Gift
-      </button>
+      <button class="cta-btn" id="uploadBtn">📸 Try Your Photo</button>
       <input type="file" id="photoInput" accept="image/*" />
 
-      <!-- Video Audio / Play Toggle -->
-      <button class="icon-btn" id="playBtn" title="Play / Pause Video">
+      <button class="icon-btn" id="playBtn" title="Play/Pause Video">
         <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
       </button>
 
-      <!-- WhatsApp Order -->
-      <a id="whatsappBtn" href="https://wa.me/?text=Hi%20Kovai%20Studio!%20I%20am%20exploring%20your%20AR%20gifts%20and%20want%20to%20order." target="_blank" class="icon-btn" title="Order on WhatsApp">
+      <a id="whatsappBtn" href="https://wa.me/?text=Hi%20Kovai%20Studio!%20I%20want%20to%20order%20a%20Customized%20Gift." target="_blank" class="icon-btn" title="Order on WhatsApp">
         <svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.53c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.06s.88 2.39 1 2.56c.12.17 1.74 2.65 4.21 3.72.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29"/></svg>
       </a>
     </div>
   </div>
 
-  <!-- A-Frame 3D Spatial Scene -->
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; filterMinCF:0.0001; filterBeta: 0.001;"
     vr-mode-ui="enabled: false"
@@ -316,41 +306,51 @@
         loop
         crossorigin="anonymous">
       </video>
-      <img id="userTexture" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAApreview" />
+      <!-- Visible Default Pattern Texture -->
+      <img id="userTexture" src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=60" crossorigin="anonymous" />
     </a-assets>
+
+    <!-- Essential Scene Lights -->
+    <a-entity light="type: ambient; color: #FFFFFF; intensity: 1.8;"></a-entity>
+    <a-entity light="type: directional; color: #FFFFFF; intensity: 1.2" position="1 2 2"></a-entity>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- AR Target Tracking Root -->
+    <!-- AR Target Marker Root -->
     <a-entity id="targetRoot" mindar-image-target="targetIndex: 0">
       
-      <!-- Holographic Stage Elevation Plane -->
-      <a-plane position="0 0 0" width="1.06" height="1.06" material="color: #D4AF37; opacity: 0.25; transparent: true; wireframe: true"></a-plane>
-
-      <!-- Center Video Screen with Z-axis Pop -->
+      <!-- Center Main Video Screen -->
       <a-plane
         id="videoStage"
-        position="0 0 0.04"
+        position="0 0 0.02"
         width="1"
         height="1"
-        material="src: #arVideo; side: double; transparent: true">
+        material="src: #arVideo; shader: flat; side: double; transparent: true">
       </a-plane>
 
-      <!-- Floating 3D Gift Preview Stand (Right Side of Card) -->
-      <a-entity id="giftStand" position="0.75 0 0.12" animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear">
-        <!-- 3D Gift Model Preview: Cylinder / Mug with Live Dynamic Texture -->
+      <!-- 3D Gift Orbit Stand (Positioned slightly forward on Z) -->
+      <a-entity id="giftStand" position="0.68 0 0.15" animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
+        <!-- Interactive Gift Mesh with Flat Shader -->
         <a-cylinder
           id="giftModel"
-          radius="0.22"
+          radius="0.2"
           height="0.45"
-          material="color: #ffffff; src: #userTexture; roughness: 0.3; metalness: 0.1"
-          shadow>
+          material="src: #userTexture; shader: flat; side: double; color: #FFFFFF;">
         </a-cylinder>
-        <a-torus position="0.22 0 0" radius="0.12" radius-tubular="0.02" rotation="0 90 0" material="color: #ffffff"></a-torus>
+        
+        <!-- Mug Handle -->
+        <a-torus
+          id="mugHandle"
+          position="0.2 0 0"
+          radius="0.1"
+          radius-tubular="0.02"
+          rotation="0 90 0"
+          material="color: #E5C378; shader: flat;">
+        </a-torus>
       </a-entity>
 
-      <!-- 3D Floating Particle Sparkles -->
-      <a-ring position="0 0.65 0.08" radius-inner="0.12" radius-outer="0.13" material="color: #FFE58F; opacity: 0.7; transparent: true" animation="property: scale; to: 1.15 1.15 1.15; dir: alternate; loop: true; dur: 1500"></a-ring>
+      <!-- Floating Gold Halo -->
+      <a-ring position="0 0.62 0.05" radius-inner="0.1" radius-outer="0.12" material="color: #FFE58F; shader: flat; opacity: 0.8; transparent: true"></a-ring>
     </a-entity>
   </a-scene>
 
@@ -358,30 +358,25 @@
     const API_KEY = "AIzaSyA_mBu6emRKASkqHpLtwkdBiCQKYO3rvcw"; 
     const FOLDER_ID = "1jRyVReP4cq7yk1VqwdFCMt0w4on4S77Q";
 
-    // Dynamic product showcase mapping
     const products = {
       mug: {
-        title: "Magic Thermal Mug",
-        shape: "cylinder",
-        geometry: "primitive: cylinder; radius: 0.22; height: 0.45;",
+        geometry: "primitive: cylinder; radius: 0.2; height: 0.45;",
+        handle: true,
         whatsappText: "Hi Kovai Studio! I want to customize a Magic Mug with my photo."
       },
       frame: {
-        title: "Engraved Wooden Frame",
-        shape: "box",
-        geometry: "primitive: box; width: 0.45; height: 0.55; depth: 0.04;",
+        geometry: "primitive: box; width: 0.45; height: 0.55; depth: 0.03;",
+        handle: false,
         whatsappText: "Hi Kovai Studio! I want to order a customized Wooden Photo Frame."
       },
       album: {
-        title: "Wedding Story Album",
-        shape: "box",
-        geometry: "primitive: box; width: 0.6; height: 0.42; depth: 0.06;",
-        whatsappText: "Hi Kovai Studio! I am enquiring about Wedding Album making and shoots."
+        geometry: "primitive: box; width: 0.58; height: 0.4; depth: 0.06;",
+        handle: false,
+        whatsappText: "Hi Kovai Studio! I am enquiring about Wedding Albums and shoots."
       },
       magnet: {
-        title: "AR Video Magnet",
-        shape: "box",
-        geometry: "primitive: box; width: 0.4; height: 0.4; depth: 0.02;",
+        geometry: "primitive: box; width: 0.38; height: 0.38; depth: 0.02;",
+        handle: false,
         whatsappText: "Hi Kovai Studio! I want to order AR Video Fridge Magnets."
       }
     };
@@ -408,20 +403,36 @@
       const uploadBtn = document.querySelector("#uploadBtn");
       const photoInput = document.querySelector("#photoInput");
       const giftModel = document.querySelector("#giftModel");
+      const mugHandle = document.querySelector("#mugHandle");
       const whatsappBtn = document.querySelector("#whatsappBtn");
       const sceneEl = document.querySelector('a-scene');
       const chipBtns = document.querySelectorAll(".chip-btn");
 
       let isPlaying = false;
-      let selectedProduct = "mug";
+      let currentTextureSrc = "#userTexture";
 
-      // Scene Ready
       sceneEl.addEventListener("arReady", () => {
         curtain.style.opacity = "0";
         setTimeout(() => { curtain.style.display = "none"; }, 600);
       });
 
-      // Target Tracking
+      function adjustPlaneToVideoRatio() {
+        if (!videoStage || !videoEl) return;
+        const w = videoEl.videoWidth;
+        const h = videoEl.videoHeight;
+        if (w > 0 && h > 0) {
+          const ratio = w / h;
+          videoStage.setAttribute('geometry', {
+            primitive: 'plane',
+            width: ratio >= 1 ? 1 : ratio,
+            height: ratio >= 1 ? (1 / ratio) : 1
+          });
+        }
+      }
+
+      videoEl.addEventListener('loadedmetadata', adjustPlaneToVideoRatio);
+      videoEl.addEventListener('playing', adjustPlaneToVideoRatio);
+
       target.addEventListener("targetFound", async () => {
         document.body.classList.add("tracked");
         const fileId = await getLatestVideoId();
@@ -441,7 +452,6 @@
         playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
       });
 
-      // Video Controls
       playBtn.addEventListener("click", async () => {
         try {
           if (!isPlaying) {
@@ -459,24 +469,27 @@
         }
       });
 
-      // Live 3D Product Swapper
+      // Product switcher
       chipBtns.forEach(btn => {
         btn.addEventListener("click", () => {
           chipBtns.forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
 
-          selectedProduct = btn.dataset.product;
-          const prodData = products[selectedProduct];
+          const prod = products[btn.dataset.product];
+          giftModel.setAttribute('geometry', prod.geometry);
+          giftModel.setAttribute('material', {
+            src: currentTextureSrc,
+            shader: 'flat',
+            side: 'double',
+            color: '#FFFFFF'
+          });
 
-          // Reconfigure 3D model geometry on the fly
-          giftModel.setAttribute('geometry', prodData.geometry);
-
-          // Update WhatsApp CTA text
-          whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(prodData.whatsappText)}`;
+          mugHandle.setAttribute('visible', prod.handle ? 'true' : 'false');
+          whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(prod.whatsappText)}`;
         });
       });
 
-      // Live Customizer: Apply User's Own Photo to 3D Gift
+      // User photo upload
       uploadBtn.addEventListener("click", () => photoInput.click());
 
       photoInput.addEventListener("change", (e) => {
@@ -484,9 +497,13 @@
         if (file) {
           const reader = new FileReader();
           reader.onload = function(evt) {
-            const textureImg = document.querySelector("#userTexture");
-            textureImg.src = evt.target.result;
-            giftModel.setAttribute('material', `src: #userTexture; roughness: 0.3; metalness: 0.1;`);
+            currentTextureSrc = evt.target.result;
+            giftModel.setAttribute('material', {
+              src: evt.target.result,
+              shader: 'flat',
+              side: 'double',
+              color: '#FFFFFF'
+            });
             uploadBtn.textContent = "✨ Photo Applied!";
           };
           reader.readAsDataURL(file);
