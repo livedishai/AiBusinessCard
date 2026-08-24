@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Customize Zone | Kovai Studio Coonoor</title>
+  <title>Customize 3D Studio | Kovai Studio Coonoor</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js & OrbitControls for Smooth 3D Viewing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <style>
     :root {
@@ -30,7 +34,8 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-bottom: 90px;
+      padding-bottom: 95px;
+      overflow-x: hidden;
     }
 
     /* ---------- Header ---------- */
@@ -64,47 +69,60 @@
       color: var(--gold-bright);
     }
 
-    /* ---------- Live Preview Canvas Stage ---------- */
+    /* ---------- 3D Stage Section ---------- */
     .stage-section {
-      padding: 20px;
+      padding: 16px 20px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: radial-gradient(circle at 50% 30%, #211238 0%, var(--bg) 75%);
+      background: radial-gradient(circle at 50% 30%, #25143e 0%, var(--bg) 80%);
     }
 
-    .preview-card {
+    .stage-container {
       position: relative;
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
       aspect-ratio: 1;
       border-radius: 20px;
-      background: var(--card-bg);
+      background: rgba(18, 11, 30, 0.7);
       border: 1px solid var(--glass-border);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(212, 175, 55, 0.05);
       overflow: hidden;
     }
 
-    .preview-canvas {
+    #threeCanvas {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      display: block;
+      touch-action: none;
+    }
+
+    .drag-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 4px 10px;
+      border-radius: 999px;
+      pointer-events: none;
     }
 
     .upload-action-row {
-      margin-top: 14px;
+      margin-top: 12px;
       display: flex;
       gap: 10px;
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
     }
 
     .upload-btn {
       flex: 1;
-      padding: 12px 16px;
+      padding: 13px 18px;
       background: var(--accent);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
@@ -118,38 +136,25 @@
       justify-content: center;
       gap: 8px;
       cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      transition: transform 0.15s ease;
     }
+
+    .upload-btn:active { transform: scale(0.97); }
 
     #fileInput { display: none; }
 
-    /* ---------- Category Chips ---------- */
-    .categories {
-      padding: 12px 20px;
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .categories::-webkit-scrollbar { display: none; }
-
-    .cat-chip {
-      flex: 0 0 auto;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: var(--card-bg);
-      border: 1px solid var(--glass-border);
-      color: var(--text-dim);
+    /* ---------- Section Title ---------- */
+    .section-heading {
+      padding: 14px 20px 4px;
       font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .cat-chip.active {
-      background: var(--gold);
-      color: #120924;
-      border-color: var(--gold-bright);
       font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     /* ---------- Product Items Grid ---------- */
@@ -167,36 +172,40 @@
       background: var(--card-bg);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
-      padding: 14px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       gap: 14px;
       cursor: pointer;
-      transition: transform 0.15s ease, border-color 0.2s;
+      transition: transform 0.15s ease, border-color 0.2s, background 0.2s;
     }
 
     .product-card.selected {
       border-color: var(--gold-bright);
-      background: rgba(43, 27, 68, 0.9);
+      background: rgba(58, 30, 96, 0.7);
+      box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
     }
 
-    .product-card img {
-      width: 68px;
-      height: 68px;
+    .product-badge {
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
-      object-fit: cover;
+      background: rgba(212, 175, 55, 0.12);
       border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
     }
 
-    .product-info {
-      flex: 1;
-    }
+    .product-info { flex: 1; }
 
     .product-title {
       font-size: 14px;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .product-desc {
@@ -205,14 +214,7 @@
       line-height: 1.4;
     }
 
-    .product-price {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gold-bright);
-      margin-top: 4px;
-    }
-
-    /* ---------- Sticky WhatsApp Order Footer ---------- */
+    /* ---------- WhatsApp Sticky Footer ---------- */
     .footer-dock {
       position: fixed;
       bottom: 0;
@@ -224,18 +226,15 @@
       backdrop-filter: blur(12px);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      justify-content: center;
       z-index: 200;
     }
 
     .whatsapp-btn {
-      flex: 1;
-      max-width: 480px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: 440px;
       padding: 14px 20px;
       background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-      border: none;
       border-radius: 14px;
       color: #FFFFFF;
       font-weight: 700;
@@ -248,7 +247,10 @@
       justify-content: center;
       gap: 10px;
       box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+      transition: transform 0.15s ease;
     }
+
+    .whatsapp-btn:active { transform: scale(0.97); }
 
     .whatsapp-btn svg {
       width: 20px;
@@ -261,14 +263,15 @@
 <body>
 
   <header>
-    <a href="index.html" class="back-link">‹ Back to AR Card</a>
-    <div class="brand-title">CUSTOMIZE ZONE</div>
+    <a href="index.html" class="back-link">‹ Back to AR Video</a>
+    <div class="brand-title">3D CUSTOMIZE STUDIO</div>
   </header>
 
-  <!-- Live Canvas Stage -->
+  <!-- 3D Stage Section -->
   <section class="stage-section">
-    <div class="preview-card">
-      <canvas id="previewCanvas" width="600" height="600" class="preview-canvas"></canvas>
+    <div class="stage-container">
+      <div id="threeCanvas"></div>
+      <div class="drag-hint">👆 Drag to rotate 3D view</div>
     </div>
 
     <div class="upload-action-row">
@@ -277,161 +280,242 @@
     </div>
   </section>
 
-  <!-- Category Filter Chips -->
-  <div class="categories">
-    <button class="cat-chip active" data-cat="all">All Items</button>
-    <button class="cat-chip" data-cat="sublimation">Sublimation Mugs &amp; Apparel</button>
-    <button class="cat-chip" data-cat="frames">Wood &amp; Acrylic Frames</button>
-    <button class="cat-chip" data-cat="albums">Wedding &amp; Kids Shoots</button>
-  </div>
+  <div class="section-heading">Select Gift to Preview in 3D</div>
 
-  <!-- Interactive Product List -->
-  <div class="product-list" id="productList">
-    <!-- Items rendered dynamically -->
-  </div>
+  <!-- Product Switcher List -->
+  <div class="product-list" id="productList"></div>
 
-  <!-- WhatsApp Direct Order Dock -->
+  <!-- WhatsApp Action Footer -->
   <div class="footer-dock">
-    <a id="orderBtn" href="https://wa.me/?text=Hi%20Kovai%20Studio!%20I%20want%20to%20order%20a%20customized%20gift." target="_blank" class="whatsapp-btn">
+    <a id="orderBtn" href="#" target="_blank" class="whatsapp-btn">
       <svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.53c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.06s.88 2.39 1 2.56c.12.17 1.74 2.65 4.21 3.72.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29"/></svg>
-      Order Customized Gift On WhatsApp
+      Order This Gift On WhatsApp
     </a>
   </div>
 
   <script>
-    const items = [
+    const products = [
       {
         id: "mug",
-        title: "Magic Thermal & Ceramic Mugs",
-        category: "sublimation",
-        desc: "Heat-sensitive color changing mug with custom photo reveal.",
-        img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=60",
-        type: "mug"
+        title: "Magic Thermal & Ceramic Mug",
+        icon: "☕",
+        desc: "Sublimation ceramic mug with white rims and side handle.",
+        whatsappText: "Hi Kovai Studio! I customized a Magic Mug with my photo in 3D and want to order."
+      },
+      {
+        id: "pillow",
+        title: "Personalized Cushion / Pillow",
+        icon: "🛋️",
+        desc: "Square velvet cushion with your custom photo print.",
+        whatsappText: "Hi Kovai Studio! I customized a Photo Pillow in 3D and want to order."
+      },
+      {
+        id: "frame",
+        title: "Engraved Wooden Photo Frame",
+        icon: "🖼️",
+        desc: "Classic deep-grain wooden frame with matte photo lamination.",
+        whatsappText: "Hi Kovai Studio! I customized a Wooden Frame in 3D and want to order."
       },
       {
         id: "tshirt",
         title: "Customized Photo T-Shirt",
-        category: "sublimation",
-        desc: "Premium breathable fabric with vibrant high-res sublimation prints.",
-        img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=60",
-        type: "tshirt"
+        icon: "👕",
+        desc: "Premium cotton-poly apparel with center chest artwork.",
+        whatsappText: "Hi Kovai Studio! I customized a T-Shirt with my photo in 3D and want to order."
       },
       {
-        id: "pillow",
-        title: "Personalized Cushion & Pillow",
-        category: "sublimation",
-        desc: "Soft velvet/satin customized pillows for home decor and gifting.",
-        img: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=400&auto=format&fit=crop&q=60",
-        type: "pillow"
-      },
-      {
-        id: "frame",
-        title: "Engraved Wooden & Acrylic Frame",
-        category: "frames",
-        desc: "Laser precision cutting with deep photo lamination.",
-        img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&auto=format&fit=crop&q=60",
-        type: "frame"
-      },
-      {
-        id: "album",
-        title: "Wedding & Kids Photo Album Making",
-        category: "albums",
-        desc: "HD non-tearable synthetic photo sheets with premium leatherette box.",
-        img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&auto=format&fit=crop&q=60",
-        type: "album"
+        id: "magnet",
+        title: "AR Video Fridge Magnet",
+        icon: "🧲",
+        desc: "Glossy magnetic tile that triggers video playback in AR.",
+        whatsappText: "Hi Kovai Studio! I want to order customized AR Video Fridge Magnets."
       }
     ];
 
-    let selectedItem = items[0];
-    let userUploadedImg = null;
+    let currentProduct = products[0];
+    let userTexture = null;
 
-    const canvas = document.getElementById("previewCanvas");
-    const ctx = canvas.getContext("2d");
+    // ---------- Three.js Setup ----------
+    const container = document.getElementById("threeCanvas");
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 0.4, 3.0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enablePan = false;
+    controls.minDistance = 1.8;
+    controls.maxDistance = 4.5;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.6;
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xfff5e6, 1.0);
+    dirLight1.position.set(2, 4, 3);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xd4af37, 0.6);
+    dirLight2.position.set(-2, -2, -2);
+    scene.add(dirLight2);
+
+    // Dynamic 3D Object Group
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
+
+    // Default Texture Loader
+    const textureLoader = new THREE.TextureLoader();
+    const defaultTexture = textureLoader.load("https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60");
+
+    // ---------- 3D Model Generators ----------
+    function buildModel(type) {
+      // Clear previous meshes
+      while (modelGroup.children.length > 0) {
+        const obj = modelGroup.children[0];
+        if (obj.geometry) obj.geometry.dispose();
+        modelGroup.remove(obj);
+      }
+
+      const activeTex = userTexture || defaultTexture;
+
+      if (type === "mug") {
+        // 1. Ceramic Body (White)
+        const bodyGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.1, 48);
+        const ceramicMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.05 });
+        const bodyMesh = new THREE.Mesh(bodyGeo, ceramicMat);
+        modelGroup.add(bodyMesh);
+
+        // 2. Inner cavity
+        const innerGeo = new THREE.CylinderGeometry(0.44, 0.44, 1.08, 48, 1, true);
+        const innerMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, side: THREE.BackSide });
+        const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        innerMesh.position.y = 0.05;
+        modelGroup.add(innerMesh);
+
+        // 3. Sublimation Decal Layer (270 degree wrap)
+        const decalGeo = new THREE.CylinderGeometry(0.505, 0.505, 0.92, 48, 1, true, Math.PI * 0.25, Math.PI * 1.5);
+        const decalMat = new THREE.MeshBasicMaterial({ map: activeTex, side: THREE.DoubleSide });
+        const decalMesh = new THREE.Mesh(decalGeo, decalMat);
+        modelGroup.add(decalMesh);
+
+        // 4. Ceramic Handle (Sideways in the 90-degree gap)
+        const handleGeo = new THREE.TorusGeometry(0.28, 0.055, 24, 48, Math.PI);
+        const handleMesh = new THREE.Mesh(handleGeo, ceramicMat);
+        handleMesh.position.set(0.5, 0, 0);
+        handleMesh.rotation.set(0, Math.PI / 2, -Math.PI / 2);
+        modelGroup.add(handleMesh);
+
+        modelGroup.position.set(0, 0, 0);
+        modelGroup.scale.set(1, 1, 1);
+
+      } else if (type === "pillow") {
+        // Cushion: Soft rounded pillow
+        const pillowGeo = new THREE.BoxGeometry(1.2, 1.2, 0.35, 16, 16, 8);
+        
+        // Pillow Fabric sides
+        const pillowMat = new THREE.MeshStandardMaterial({ color: 0x1f1433, roughness: 0.8 });
+        const printMat = new THREE.MeshBasicMaterial({ map: activeTex });
+
+        // Apply print material to front and rear faces
+        const mats = [pillowMat, pillowMat, pillowMat, pillowMat, printMat, pillowMat];
+        const pillowMesh = new THREE.Mesh(pillowGeo, mats);
+        modelGroup.add(pillowMesh);
+
+        modelGroup.position.set(0, 0, 0);
+        modelGroup.scale.set(1, 1, 1);
+
+      } else if (type === "frame") {
+        // Frame: Wooden Border + Center Photo Plane
+        const frameGeo = new THREE.BoxGeometry(1.2, 1.4, 0.06);
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.6 });
+        const frameMesh = new THREE.Mesh(frameGeo, woodMat);
+        modelGroup.add(frameMesh);
+
+        const photoGeo = new THREE.PlaneGeometry(1.0, 1.2);
+        const photoMat = new THREE.MeshBasicMaterial({ map: activeTex, side: THREE.DoubleSide });
+        const photoMesh = new THREE.Mesh(photoGeo, photoMat);
+        photoMesh.position.z = 0.035;
+        modelGroup.add(photoMesh);
+
+        modelGroup.position.set(0, 0, 0);
+        modelGroup.scale.set(1, 1, 1);
+
+      } else if (type === "tshirt") {
+        // T-Shirt Mockup: Body Plate + Print Area
+        const shirtGeo = new THREE.BoxGeometry(1.2, 1.4, 0.12);
+        const fabricMat = new THREE.MeshStandardMaterial({ color: 0x140f20, roughness: 0.9 });
+        const shirtMesh = new THREE.Mesh(shirtGeo, fabricMat);
+        modelGroup.add(shirtMesh);
+
+        // Center chest decal
+        const decalGeo = new THREE.PlaneGeometry(0.7, 0.85);
+        const decalMat = new THREE.MeshBasicMaterial({ map: activeTex, side: THREE.DoubleSide });
+        const decalMesh = new THREE.Mesh(decalGeo, decalMat);
+        decalMesh.position.set(0, 0.05, 0.065);
+        modelGroup.add(decalMesh);
+
+        modelGroup.position.set(0, 0, 0);
+        modelGroup.scale.set(1, 1, 1);
+
+      } else if (type === "magnet") {
+        // Magnet Tile
+        const magnetGeo = new THREE.BoxGeometry(1.0, 1.0, 0.03);
+        const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+        const printMat = new THREE.MeshBasicMaterial({ map: activeTex });
+
+        const mats = [blackMat, blackMat, blackMat, blackMat, printMat, blackMat];
+        const magnetMesh = new THREE.Mesh(magnetGeo, mats);
+        modelGroup.add(magnetMesh);
+
+        modelGroup.position.set(0, 0, 0);
+        modelGroup.scale.set(1, 1, 1);
+      }
+    }
+
+    // ---------- UI & Interaction Logic ----------
     const productListEl = document.getElementById("productList");
     const fileInput = document.getElementById("fileInput");
     const triggerUpload = document.getElementById("triggerUpload");
     const orderBtn = document.getElementById("orderBtn");
-    const catChips = document.querySelectorAll(".cat-chip");
 
-    function renderProductList(filterCat = "all") {
+    function renderList() {
       productListEl.innerHTML = "";
-      const filtered = filterCat === "all" ? items : items.filter(i => i.category === filterCat);
-
-      filtered.forEach(item => {
+      products.forEach(item => {
         const card = document.createElement("div");
-        card.className = `product-card ${item.id === selectedItem.id ? 'selected' : ''}`;
+        card.className = `product-card ${item.id === currentProduct.id ? 'selected' : ''}`;
         card.innerHTML = `
-          <img src="${item.img}" alt="${item.title}">
+          <div class="product-badge">${item.icon}</div>
           <div class="product-info">
             <div class="product-title">${item.title}</div>
             <div class="product-desc">${item.desc}</div>
           </div>
         `;
         card.addEventListener("click", () => {
-          selectedItem = item;
+          currentProduct = item;
           document.querySelectorAll(".product-card").forEach(c => c.classList.remove("selected"));
           card.classList.add("selected");
-          drawCanvas();
-          updateOrderLink();
+          buildModel(item.id);
+          updateWhatsAppLink();
         });
         productListEl.appendChild(card);
       });
     }
 
-    function drawCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // 1. Background studio backdrop
-      ctx.fillStyle = "#150d22";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 2. Base Mockup Layer
-      const baseImg = new Image();
-      baseImg.crossOrigin = "anonymous";
-      baseImg.src = selectedItem.img;
-      baseImg.onload = () => {
-        ctx.save();
-        // Rounded mockup corner
-        ctx.drawImage(baseImg, 40, 40, 520, 520);
-        ctx.restore();
-
-        // 3. User photo composited overlay (if uploaded)
-        if (userUploadedImg) {
-          ctx.save();
-          ctx.globalAlpha = 0.85;
-          ctx.strokeStyle = "#D4AF37";
-          ctx.lineWidth = 4;
-          
-          if (selectedItem.type === "mug") {
-            ctx.drawImage(userUploadedImg, 150, 160, 240, 240);
-            ctx.strokeRect(150, 160, 240, 240);
-          } else if (selectedItem.type === "tshirt") {
-            ctx.drawImage(userUploadedImg, 210, 190, 180, 200);
-            ctx.strokeRect(210, 190, 180, 200);
-          } else {
-            ctx.drawImage(userUploadedImg, 120, 120, 360, 360);
-            ctx.strokeRect(120, 120, 360, 360);
-          }
-          ctx.restore();
-        }
-      };
+    function updateWhatsAppLink() {
+      orderBtn.href = `https://wa.me/?text=${encodeURIComponent(currentProduct.whatsappText)}`;
     }
 
-    function updateOrderLink() {
-      const msg = `Hi Kovai Studio! I customized the *${selectedItem.title}* on your website and want to place an order.`;
-      orderBtn.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-    }
-
-    // Category Switching
-    catChips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        catChips.forEach(c => c.classList.remove("active"));
-        chip.classList.add("active");
-        renderProductList(chip.dataset.cat);
-      });
-    });
-
-    // File Upload Handler
+    // Photo Upload
     triggerUpload.addEventListener("click", () => fileInput.click());
 
     fileInput.addEventListener("change", (e) => {
@@ -441,9 +525,11 @@
         reader.onload = (evt) => {
           const img = new Image();
           img.onload = () => {
-            userUploadedImg = img;
-            drawCanvas();
-            triggerUpload.textContent = "✨ Photo Applied!";
+            userTexture = new THREE.Texture(img);
+            userTexture.needsUpdate = true;
+            userTexture.encoding = THREE.sRGBEncoding;
+            buildModel(currentProduct.id);
+            triggerUpload.textContent = "✨ Photo Applied to 3D!";
           };
           img.src = evt.target.result;
         };
@@ -451,10 +537,25 @@
       }
     });
 
+    // Window Resize Handler
+    window.addEventListener("resize", () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    // Animation Render Loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
     // Initialize
-    renderProductList();
-    drawCanvas();
-    updateOrderLink();
+    renderList();
+    buildModel("mug");
+    updateWhatsAppLink();
+    animate();
   </script>
 </body>
 </html>
