@@ -306,7 +306,6 @@
         loop
         crossorigin="anonymous">
       </video>
-      <!-- Reference Graphic for Sublimation Mockup -->
       <img id="userTexture" src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60" crossorigin="anonymous" />
     </a-assets>
 
@@ -339,36 +338,36 @@
           material="color: #ffffff; roughness: 0.1; metalness: 0.05;">
         </a-cylinder>
 
-        <!-- Inner Mug Cavity (Realistic Depth) -->
+        <!-- Inner Mug Cavity -->
         <a-cylinder
           id="mugInside"
           position="0 0.02 0"
           radius="0.18"
           height="0.44"
-          material="color: #ebebeb; side: back; roughness: 0.2;">
+          material="color: #e5e5e5; side: back; roughness: 0.2;">
         </a-cylinder>
 
-        <!-- Mug Ceramic Handle (Aligned directly at gap center) -->
-        <a-torus
-          id="mugHandle"
-          position="0.2 0 0"
-          radius="0.11"
-          radius-tubular="0.022"
-          rotation="0 90 0"
-          material="color: #ffffff; roughness: 0.1; metalness: 0.05;">
-        </a-torus>
-
-        <!-- Sublimation Decal Layer: 270° Open-Ended Wrap (Leaves clean rims and handle gap) -->
+        <!-- Sublimation Decal Layer: 270° wrap, open gap rotated to align with the handle -->
         <a-cylinder
           id="giftModel"
           position="0 0 0"
-          rotation="0 45 0"
+          rotation="0 -45 0"
           radius="0.203"
           height="0.38"
           theta-length="270"
           open-ended="true"
           material="src: #userTexture; shader: flat; side: double; transparent: true; color: #FFFFFF;">
         </a-cylinder>
+
+        <!-- Ceramic Handle: Turned sideways into the open gap -->
+        <a-torus
+          id="mugHandle"
+          position="0.22 0 0"
+          radius="0.11"
+          radius-tubular="0.024"
+          rotation="90 0 0"
+          material="color: #ffffff; roughness: 0.1; metalness: 0.05;">
+        </a-torus>
 
       </a-entity>
 
@@ -385,7 +384,7 @@
       mug: {
         isMug: true,
         geometry: "primitive: cylinder; radius: 0.203; height: 0.38; thetaLength: 270; openEnded: true;",
-        rotation: "0 45 0",
+        rotation: "0 -45 0",
         whatsappText: "Hi Kovai Studio! I want to customize a Magic Mug with my photo."
       },
       frame: {
