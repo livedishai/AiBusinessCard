@@ -306,11 +306,11 @@
         loop
         crossorigin="anonymous">
       </video>
-      <!-- Visible Default Pattern Texture -->
-      <img id="userTexture" src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=60" crossorigin="anonymous" />
+      <!-- Reference Graphic for Sublimation Mockup -->
+      <img id="userTexture" src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60" crossorigin="anonymous" />
     </a-assets>
 
-    <!-- Essential Scene Lights -->
+    <!-- Essential Ambient & Directional Lights -->
     <a-entity light="type: ambient; color: #FFFFFF; intensity: 1.8;"></a-entity>
     <a-entity light="type: directional; color: #FFFFFF; intensity: 1.2" position="1 2 2"></a-entity>
 
@@ -328,28 +328,51 @@
         material="src: #arVideo; shader: flat; side: double; transparent: true">
       </a-plane>
 
-      <!-- 3D Gift Orbit Stand (Positioned slightly forward on Z) -->
+      <!-- 3D Gift Stand (Orbiting 3D Mockup Container) -->
       <a-entity id="giftStand" position="0.68 0 0.15" animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
-        <!-- Interactive Gift Mesh with Flat Shader -->
+        
+        <!-- Outer Ceramic Body (Solid Glossy White) -->
         <a-cylinder
-          id="giftModel"
+          id="mugBody"
           radius="0.2"
           height="0.45"
-          material="src: #userTexture; shader: flat; side: double; color: #FFFFFF;">
+          material="color: #ffffff; roughness: 0.1; metalness: 0.05;">
         </a-cylinder>
-        
-        <!-- Mug Handle -->
+
+        <!-- Inner Mug Cavity (Realistic Depth) -->
+        <a-cylinder
+          id="mugInside"
+          position="0 0.02 0"
+          radius="0.18"
+          height="0.44"
+          material="color: #ebebeb; side: back; roughness: 0.2;">
+        </a-cylinder>
+
+        <!-- Mug Ceramic Handle (Aligned directly at gap center) -->
         <a-torus
           id="mugHandle"
           position="0.2 0 0"
-          radius="0.1"
-          radius-tubular="0.02"
+          radius="0.11"
+          radius-tubular="0.022"
           rotation="0 90 0"
-          material="color: #E5C378; shader: flat;">
+          material="color: #ffffff; roughness: 0.1; metalness: 0.05;">
         </a-torus>
+
+        <!-- Sublimation Decal Layer: 270° Open-Ended Wrap (Leaves clean rims and handle gap) -->
+        <a-cylinder
+          id="giftModel"
+          position="0 0 0"
+          rotation="0 45 0"
+          radius="0.203"
+          height="0.38"
+          theta-length="270"
+          open-ended="true"
+          material="src: #userTexture; shader: flat; side: double; transparent: true; color: #FFFFFF;">
+        </a-cylinder>
+
       </a-entity>
 
-      <!-- Floating Gold Halo -->
+      <!-- Floating Gold Halo Accent -->
       <a-ring position="0 0.62 0.05" radius-inner="0.1" radius-outer="0.12" material="color: #FFE58F; shader: flat; opacity: 0.8; transparent: true"></a-ring>
     </a-entity>
   </a-scene>
@@ -360,23 +383,27 @@
 
     const products = {
       mug: {
-        geometry: "primitive: cylinder; radius: 0.2; height: 0.45;",
-        handle: true,
+        isMug: true,
+        geometry: "primitive: cylinder; radius: 0.203; height: 0.38; thetaLength: 270; openEnded: true;",
+        rotation: "0 45 0",
         whatsappText: "Hi Kovai Studio! I want to customize a Magic Mug with my photo."
       },
       frame: {
+        isMug: false,
         geometry: "primitive: box; width: 0.45; height: 0.55; depth: 0.03;",
-        handle: false,
+        rotation: "0 0 0",
         whatsappText: "Hi Kovai Studio! I want to order a customized Wooden Photo Frame."
       },
       album: {
+        isMug: false,
         geometry: "primitive: box; width: 0.58; height: 0.4; depth: 0.06;",
-        handle: false,
+        rotation: "0 0 0",
         whatsappText: "Hi Kovai Studio! I am enquiring about Wedding Albums and shoots."
       },
       magnet: {
+        isMug: false,
         geometry: "primitive: box; width: 0.38; height: 0.38; depth: 0.02;",
-        handle: false,
+        rotation: "0 0 0",
         whatsappText: "Hi Kovai Studio! I want to order AR Video Fridge Magnets."
       }
     };
@@ -403,6 +430,8 @@
       const uploadBtn = document.querySelector("#uploadBtn");
       const photoInput = document.querySelector("#photoInput");
       const giftModel = document.querySelector("#giftModel");
+      const mugBody = document.querySelector("#mugBody");
+      const mugInside = document.querySelector("#mugInside");
       const mugHandle = document.querySelector("#mugHandle");
       const whatsappBtn = document.querySelector("#whatsappBtn");
       const sceneEl = document.querySelector('a-scene');
@@ -469,7 +498,7 @@
         }
       });
 
-      // Product switcher
+      // Product Switcher
       chipBtns.forEach(btn => {
         btn.addEventListener("click", () => {
           chipBtns.forEach(b => b.classList.remove("active"));
@@ -477,19 +506,26 @@
 
           const prod = products[btn.dataset.product];
           giftModel.setAttribute('geometry', prod.geometry);
+          giftModel.setAttribute('rotation', prod.rotation);
           giftModel.setAttribute('material', {
             src: currentTextureSrc,
             shader: 'flat',
             side: 'double',
+            transparent: true,
             color: '#FFFFFF'
           });
 
-          mugHandle.setAttribute('visible', prod.handle ? 'true' : 'false');
+          // Show/Hide Ceramic Mug structural parts
+          const mugVisibility = prod.isMug ? 'true' : 'false';
+          mugBody.setAttribute('visible', mugVisibility);
+          mugInside.setAttribute('visible', mugVisibility);
+          mugHandle.setAttribute('visible', mugVisibility);
+
           whatsappBtn.href = `https://wa.me/?text=${encodeURIComponent(prod.whatsappText)}`;
         });
       });
 
-      // User photo upload
+      // User Photo Upload
       uploadBtn.addEventListener("click", () => photoInput.click());
 
       photoInput.addEventListener("change", (e) => {
@@ -502,6 +538,7 @@
               src: evt.target.result,
               shader: 'flat',
               side: 'double',
+              transparent: true,
               color: '#FFFFFF'
             });
             uploadBtn.textContent = "✨ Photo Applied!";
