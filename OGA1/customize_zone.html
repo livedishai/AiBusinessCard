@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Customize Zone | Kovai Studio Coonoor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0d0816;
+      --card-bg: rgba(26, 17, 40, 0.85);
+      --gold: #D4AF37;
+      --gold-bright: #FFE58F;
+      --glass-border: rgba(212, 175, 55, 0.3);
+      --text: #FAF7F2;
+      --text-dim: rgba(250, 247, 242, 0.65);
+      --accent: linear-gradient(135deg, #7b1fa2 0%, #38006b 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 90px;
+    }
+
+    /* ---------- Header ---------- */
+    header {
+      padding: max(16px, env(safe-area-inset-top)) 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--glass-border);
+      background: rgba(13, 8, 22, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .back-link {
+      color: var(--gold-bright);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      letter-spacing: 2px;
+      color: var(--gold-bright);
+    }
+
+    /* ---------- Live Preview Canvas Stage ---------- */
+    .stage-section {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: radial-gradient(circle at 50% 30%, #211238 0%, var(--bg) 75%);
+    }
+
+    .preview-card {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 1;
+      border-radius: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .preview-canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .upload-action-row {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .upload-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--accent);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    #fileInput { display: none; }
+
+    /* ---------- Category Chips ---------- */
+    .categories {
+      padding: 12px 20px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .categories::-webkit-scrollbar { display: none; }
+
+    .cat-chip {
+      flex: 0 0 auto;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-dim);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cat-chip.active {
+      background: var(--gold);
+      color: #120924;
+      border-color: var(--gold-bright);
+      font-weight: 700;
+    }
+
+    /* ---------- Product Items Grid ---------- */
+    .product-list {
+      padding: 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.2s;
+    }
+
+    .product-card.selected {
+      border-color: var(--gold-bright);
+      background: rgba(43, 27, 68, 0.9);
+    }
+
+    .product-card img {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid var(--glass-border);
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .product-desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .product-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold-bright);
+      margin-top: 4px;
+    }
+
+    /* ---------- Sticky WhatsApp Order Footer ---------- */
+    .footer-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 20px max(16px, env(safe-area-inset-bottom));
+      background: rgba(13, 8, 22, 0.95);
+      border-top: 1px solid var(--glass-border);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 200;
+    }
+
+    .whatsapp-btn {
+      flex: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      border: none;
+      border-radius: 14px;
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+    }
+
+    .whatsapp-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #FFFFFF;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <a href="index.html" class="back-link">‹ Back to AR Card</a>
+    <div class="brand-title">CUSTOMIZE ZONE</div>
+  </header>
+
+  <!-- Live Canvas Stage -->
+  <section class="stage-section">
+    <div class="preview-card">
+      <canvas id="previewCanvas" width="600" height="600" class="preview-canvas"></canvas>
+    </div>
+
+    <div class="upload-action-row">
+      <button class="upload-btn" id="triggerUpload">📸 Upload Your Photo</button>
+      <input type="file" id="fileInput" accept="image/*" />
+    </div>
+  </section>
+
+  <!-- Category Filter Chips -->
+  <div class="categories">
+    <button class="cat-chip active" data-cat="all">All Items</button>
+    <button class="cat-chip" data-cat="sublimation">Sublimation Mugs &amp; Apparel</button>
+    <button class="cat-chip" data-cat="frames">Wood &amp; Acrylic Frames</button>
+    <button class="cat-chip" data-cat="albums">Wedding &amp; Kids Shoots</button>
+  </div>
+
+  <!-- Interactive Product List -->
+  <div class="product-list" id="productList">
+    <!-- Items rendered dynamically -->
+  </div>
+
+  <!-- WhatsApp Direct Order Dock -->
+  <div class="footer-dock">
+    <a id="orderBtn" href="https://wa.me/?text=Hi%20Kovai%20Studio!%20I%20want%20to%20order%20a%20customized%20gift." target="_blank" class="whatsapp-btn">
+      <svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.53c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.06s.88 2.39 1 2.56c.12.17 1.74 2.65 4.21 3.72.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29"/></svg>
+      Order Customized Gift On WhatsApp
+    </a>
+  </div>
+
+  <script>
+    const items = [
+      {
+        id: "mug",
+        title: "Magic Thermal & Ceramic Mugs",
+        category: "sublimation",
+        desc: "Heat-sensitive color changing mug with custom photo reveal.",
+        img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=60",
+        type: "mug"
+      },
+      {
+        id: "tshirt",
+        title: "Customized Photo T-Shirt",
+        category: "sublimation",
+        desc: "Premium breathable fabric with vibrant high-res sublimation prints.",
+        img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400&auto=format&fit=crop&q=60",
+        type: "tshirt"
+      },
+      {
+        id: "pillow",
+        title: "Personalized Cushion & Pillow",
+        category: "sublimation",
+        desc: "Soft velvet/satin customized pillows for home decor and gifting.",
+        img: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=400&auto=format&fit=crop&q=60",
+        type: "pillow"
+      },
+      {
+        id: "frame",
+        title: "Engraved Wooden & Acrylic Frame",
+        category: "frames",
+        desc: "Laser precision cutting with deep photo lamination.",
+        img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&auto=format&fit=crop&q=60",
+        type: "frame"
+      },
+      {
+        id: "album",
+        title: "Wedding & Kids Photo Album Making",
+        category: "albums",
+        desc: "HD non-tearable synthetic photo sheets with premium leatherette box.",
+        img: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=400&auto=format&fit=crop&q=60",
+        type: "album"
+      }
+    ];
+
+    let selectedItem = items[0];
+    let userUploadedImg = null;
+
+    const canvas = document.getElementById("previewCanvas");
+    const ctx = canvas.getContext("2d");
+    const productListEl = document.getElementById("productList");
+    const fileInput = document.getElementById("fileInput");
+    const triggerUpload = document.getElementById("triggerUpload");
+    const orderBtn = document.getElementById("orderBtn");
+    const catChips = document.querySelectorAll(".cat-chip");
+
+    function renderProductList(filterCat = "all") {
+      productListEl.innerHTML = "";
+      const filtered = filterCat === "all" ? items : items.filter(i => i.category === filterCat);
+
+      filtered.forEach(item => {
+        const card = document.createElement("div");
+        card.className = `product-card ${item.id === selectedItem.id ? 'selected' : ''}`;
+        card.innerHTML = `
+          <img src="${item.img}" alt="${item.title}">
+          <div class="product-info">
+            <div class="product-title">${item.title}</div>
+            <div class="product-desc">${item.desc}</div>
+          </div>
+        `;
+        card.addEventListener("click", () => {
+          selectedItem = item;
+          document.querySelectorAll(".product-card").forEach(c => c.classList.remove("selected"));
+          card.classList.add("selected");
+          drawCanvas();
+          updateOrderLink();
+        });
+        productListEl.appendChild(card);
+      });
+    }
+
+    function drawCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 1. Background studio backdrop
+      ctx.fillStyle = "#150d22";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2. Base Mockup Layer
+      const baseImg = new Image();
+      baseImg.crossOrigin = "anonymous";
+      baseImg.src = selectedItem.img;
+      baseImg.onload = () => {
+        ctx.save();
+        // Rounded mockup corner
+        ctx.drawImage(baseImg, 40, 40, 520, 520);
+        ctx.restore();
+
+        // 3. User photo composited overlay (if uploaded)
+        if (userUploadedImg) {
+          ctx.save();
+          ctx.globalAlpha = 0.85;
+          ctx.strokeStyle = "#D4AF37";
+          ctx.lineWidth = 4;
+          
+          if (selectedItem.type === "mug") {
+            ctx.drawImage(userUploadedImg, 150, 160, 240, 240);
+            ctx.strokeRect(150, 160, 240, 240);
+          } else if (selectedItem.type === "tshirt") {
+            ctx.drawImage(userUploadedImg, 210, 190, 180, 200);
+            ctx.strokeRect(210, 190, 180, 200);
+          } else {
+            ctx.drawImage(userUploadedImg, 120, 120, 360, 360);
+            ctx.strokeRect(120, 120, 360, 360);
+          }
+          ctx.restore();
+        }
+      };
+    }
+
+    function updateOrderLink() {
+      const msg = `Hi Kovai Studio! I customized the *${selectedItem.title}* on your website and want to place an order.`;
+      orderBtn.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    }
+
+    // Category Switching
+    catChips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        catChips.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        renderProductList(chip.dataset.cat);
+      });
+    });
+
+    // File Upload Handler
+    triggerUpload.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            userUploadedImg = img;
+            drawCanvas();
+            triggerUpload.textContent = "✨ Photo Applied!";
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Initialize
+    renderProductList();
+    drawCanvas();
+    updateOrderLink();
+  </script>
+</body>
+</html>
