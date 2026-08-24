@@ -309,7 +309,6 @@
       <img id="userTexture" src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=60" crossorigin="anonymous" />
     </a-assets>
 
-    <!-- Essential Ambient & Directional Lights -->
     <a-entity light="type: ambient; color: #FFFFFF; intensity: 1.8;"></a-entity>
     <a-entity light="type: directional; color: #FFFFFF; intensity: 1.2" position="1 2 2"></a-entity>
 
@@ -327,7 +326,7 @@
         material="src: #arVideo; shader: flat; side: double; transparent: true">
       </a-plane>
 
-      <!-- 3D Gift Stand (Orbiting 3D Mockup Container) -->
+      <!-- 3D Gift Stand -->
       <a-entity id="giftStand" position="0.68 0 0.15" animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear">
         
         <!-- Outer Ceramic Body (Solid Glossy White) -->
@@ -347,25 +346,27 @@
           material="color: #e5e5e5; side: back; roughness: 0.2;">
         </a-cylinder>
 
-        <!-- Sublimation Decal Layer: 270° wrap, open gap rotated to align with the handle -->
+        <!-- Decal Layer: Starts at 45° and spans 270°, leaving the 90° blank white gap centered directly at +X (0°) where the handle is -->
         <a-cylinder
           id="giftModel"
           position="0 0 0"
-          rotation="0 -45 0"
+          rotation="0 0 0"
           radius="0.203"
           height="0.38"
+          theta-start="45"
           theta-length="270"
           open-ended="true"
           material="src: #userTexture; shader: flat; side: double; transparent: true; color: #FFFFFF;">
         </a-cylinder>
 
-        <!-- Ceramic Handle: Turned sideways into the open gap -->
+        <!-- Mug Handle: Vertical ear-handle attached to the side inside the white gap -->
         <a-torus
           id="mugHandle"
-          position="0.22 0 0"
+          position="0.21 0 0"
           radius="0.11"
           radius-tubular="0.024"
-          rotation="90 0 0"
+          rotation="0 90 0"
+          arc="180"
           material="color: #ffffff; roughness: 0.1; metalness: 0.05;">
         </a-torus>
 
@@ -383,8 +384,8 @@
     const products = {
       mug: {
         isMug: true,
-        geometry: "primitive: cylinder; radius: 0.203; height: 0.38; thetaLength: 270; openEnded: true;",
-        rotation: "0 -45 0",
+        geometry: "primitive: cylinder; radius: 0.203; height: 0.38; thetaStart: 45; thetaLength: 270; openEnded: true;",
+        rotation: "0 0 0",
         whatsappText: "Hi Kovai Studio! I want to customize a Magic Mug with my photo."
       },
       frame: {
@@ -497,7 +498,6 @@
         }
       });
 
-      // Product Switcher
       chipBtns.forEach(btn => {
         btn.addEventListener("click", () => {
           chipBtns.forEach(b => b.classList.remove("active"));
@@ -514,7 +514,6 @@
             color: '#FFFFFF'
           });
 
-          // Show/Hide Ceramic Mug structural parts
           const mugVisibility = prod.isMug ? 'true' : 'false';
           mugBody.setAttribute('visible', mugVisibility);
           mugInside.setAttribute('visible', mugVisibility);
@@ -524,7 +523,6 @@
         });
       });
 
-      // User Photo Upload
       uploadBtn.addEventListener("click", () => photoInput.click());
 
       photoInput.addEventListener("change", (e) => {
