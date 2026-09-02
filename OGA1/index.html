@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>JEWELS-AI | Floating AR Catalog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    :root {
+      --deep: #130821;
+      --deep-2: #1f0d33;
+      --brand-purple: #5E0F8B;
+      --brand-purple-dark: #2c0a49;
+      --gold: #D4AF37;
+      --gold-soft: #F0D687;
+      --cream: #F5EFE6;
+      --cream-dim: rgba(245, 239, 230, 0.62);
+      --glass: rgba(245, 239, 230, 0.08);
+      --glass-border: rgba(212, 175, 55, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--deep);
+      overflow: hidden;
+      font-family: 'Manrope', sans-serif;
+      color: var(--cream);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ---------- Loader ---------- */
+    #blackCurtain {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 40%, var(--deep-2) 0%, var(--deep) 70%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+
+    .gem-loader {
+      width: 56px;
+      height: 56px;
+      animation: gemSpin 2.6s ease-in-out infinite;
+    }
+
+    .gem-loader path {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.4;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 6px rgba(212,175,55,0.55));
+    }
+
+    @keyframes gemSpin {
+      0%   { transform: rotate(0deg) scale(1); }
+      50%  { transform: rotate(180deg) scale(1.08); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    #loader {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-style: italic;
+      font-size: 19px;
+      letter-spacing: 2px;
+      color: var(--cream);
+      text-align: center;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    #loader span {
+      display: block;
+      font-family: 'Manrope', sans-serif;
+      font-style: normal;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-top: 6px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 1; }
+    }
+
+    /* ---------- Brand mark ---------- */
+    #brandMark {
+      position: fixed;
+      top: max(18px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: var(--gold-soft);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #brandMark::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+
+    /* ---------- Scan hint ---------- */
+    #scanHint {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 400;
+      width: min(64vw, 260px);
+      aspect-ratio: 1;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    #scanHint .corner {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--gold);
+      opacity: 0.85;
+    }
+    #scanHint .tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 6px 0 0 0; }
+    #scanHint .tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 6px 0 0; }
+    #scanHint .bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 6px; }
+    #scanHint .br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 6px 0; }
+
+    #scanHint .scanline {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      box-shadow: 0 0 8px var(--gold);
+      animation: scanMove 2.2s ease-in-out infinite;
+    }
+
+    @keyframes scanMove {
+      0%   { top: 6%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 92%; opacity: 0; }
+    }
+
+    #scanHint p {
+      position: absolute;
+      bottom: -34px;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+    }
+
+    body.found #scanHint,
+    body.found #brandMark {
+      opacity: 0;
+    }
+
+    /* ---------- Bottom UI Controls ---------- */
+    .button-panel {
+      position: fixed;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      display: flex;
+      gap: 12px;
+      opacity: 0;
+      z-index: 100;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      pointer-events: none;
+    }
+
+    body.found .button-panel {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .plan-button {
+      position: relative;
+      overflow: hidden;
+      padding: 13px 28px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+      color: var(--cream);
+      cursor: pointer;
+      min-width: 160px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s ease;
+    }
+
+    .plan-button:active { transform: scale(0.97); }
+
+    /* Category switch floating tabs on top */
+    .category-bar {
+      position: fixed;
+      top: max(20px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      display: flex;
+      gap: 8px;
+      z-index: 500;
+      opacity: 0;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    body.found .category-bar {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .cat-btn {
+      padding: 8px 16px;
+      background: rgba(19, 8, 33, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      color: var(--cream);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+
+    .cat-btn.active {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: var(--deep);
+    }
+
+    #instagramButton {
+      position: fixed;
+      bottom: max(25px, env(safe-area-inset-bottom));
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      z-index: 1000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      text-decoration: none;
+    }
+
+    #instagramButton img {
+      width: 24px;
+      height: 24px;
+      filter: sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.15);
+    }
+
+    .a-enter-vr, .a-enter-ar, .a-orientation-modal, .mindar-ui-loading, .mindar-ui-compatibility {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="blackCurtain">
+    <svg class="gem-loader" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 4 L48 20 L28 52 L8 20 Z M8 20 L48 20 M18 20 L28 4 L38 20 M18 20 L28 52 M38 20 L28 52" />
+    </svg>
+    <div id="loader">Initializing<span>Camera &amp; AR</span></div>
+  </div>
+
+  <div id="brandMark">JEWELS·AI</div>
+
+  <!-- Realtime In-AR Category Switcher -->
+  <div class="category-bar" id="categoryBar">
+    <button class="cat-btn active" data-category="bridal">Bridal</button>
+    <button class="cat-btn" data-category="necklaces">Necklaces</button>
+    <button class="cat-btn" data-category="bangles">Bangles</button>
+  </div>
+
+  <div id="scanHint">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="scanline"></div>
+    <p>Align with card to float catalog</p>
+  </div>
+
+  <a href="https://www.instagram.com/overlay_gifts_ai/" target="_blank" id="instagramButton">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+  </a>
+
+  <div class="button-panel" id="planButtons">
+    <button class="plan-button" id="toggleButton">▶ Play Video</button>
+  </div>
+
+  <!-- A-FRAME AR SCENE -->
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; filterMinCF:0.0001; filterBeta: 0.001;"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    renderer="antialias: true; alpha: true">
+
+    <a-assets>
+      <video id="driveVideo" playsinline webkit-playsinline preload="auto" loop crossorigin="anonymous"></video>
+      <!-- Transparent Catalog Mock Items -->
+      <img id="imgItem1" src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=300" crossorigin="anonymous">
+      <img id="imgItem2" src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300" crossorigin="anonymous">
+      <img id="imgItem3" src="https://images.unsplash.com/photo-1611591475824-7890f576e107?w=300" crossorigin="anonymous">
+    </a-assets>
+
+    <!-- Raycaster for tapping floating objects directly on mobile -->
+    <a-camera position="0 0 0" look-controls="enabled: false" cursor="rayOrigin: mouse" raycaster="objects: .clickable;"></a-camera>
+
+    <a-entity id="target1" mindar-image-target="targetIndex: 0">
+      
+      <!-- Main Target Video Plane -->
+      <a-plane
+        id="videoPlane"
+        width="1"
+        height="1"
+        visible="false"
+        material="src: #driveVideo; side: double; transparent: true">
+      </a-plane>
+
+      <!-- FLOATING AR CATALOG GROUP -->
+      <a-entity id="catalogGroup" position="0 0 0.1">
+
+        <!-- Floating Item Left -->
+        <a-entity id="floatLeft" class="clickable" position="-0.75 0 0"
+                  animation="property: position; to: -0.75 0.06 0; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine">
+          <a-plane width="0.42" height="0.52" material="src: #imgItem1; transparent: true; opacity: 0.95;"></a-plane>
+          <a-plane width="0.44" height="0.54" position="0 0 -0.01" material="color: #D4AF37; opacity: 0.4"></a-plane>
+        </a-entity>
+
+        <!-- Floating Item Right -->
+        <a-entity id="floatRight" class="clickable" position="0.75 0 0"
+                  animation="property: position; to: 0.75 -0.06 0; dir: alternate; loop: true; dur: 2400; easing: easeInOutSine">
+          <a-plane width="0.42" height="0.52" material="src: #imgItem2; transparent: true; opacity: 0.95;"></a-plane>
+          <a-plane width="0.44" height="0.54" position="0 0 -0.01" material="color: #D4AF37; opacity: 0.4"></a-plane>
+        </a-entity>
+
+        <!-- Floating Top Featured Card -->
+        <a-entity id="floatTop" class="clickable" position="0 0.75 0"
+                  animation="property: position; to: 0 0.81 0; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine">
+          <a-plane width="0.42" height="0.42" material="src: #imgItem3; transparent: true; opacity: 0.95;"></a-plane>
+          <a-plane width="0.44" height="0.44" position="0 0 -0.01" material="color: #D4AF37; opacity: 0.4"></a-plane>
+        </a-entity>
+
+        <!-- Floating In-Scene Badge Info -->
+        <a-entity id="infoBadge" position="0 -0.68 0">
+          <a-plane width="1.1" height="0.22" material="color: #130821; opacity: 0.85;">
+            <a-text id="badgeText" value="Kundan Collection | Tap item to inspect" align="center" color="#F0D687" width="2"></a-text>
+          </a-plane>
+        </a-entity>
+
+      </a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const API_KEY = "AIzaSyA_mBu6emRKASkqHpLtwkdBiCQKYO3rvcw"; 
+    const FOLDER_ID = "1jRyVReP4cq7yk1VqwdFCMt0w4on4S77Q";
+
+    // Dynamic mock catalog entries mapped to categories
+    const CATALOG_DATA = {
+      bridal: [
+        { name: "Royal Bridal Choker", img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=300" },
+        { name: "Polki Bridal Jhumkas", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=300" },
+        { name: "Kundan Matha Patti", img: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=300" }
+      ],
+      necklaces: [
+        { name: "Temple Gold Haram", img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300" },
+        { name: "Emerald Mango Mala", img: "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?w=300" },
+        { name: "Antique Kasu Chain", img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=300" }
+      ],
+      bangles: [
+        { name: "Filigree Antique Kada", img: "https://images.unsplash.com/photo-1611591475824-7890f576e107?w=300" },
+        { name: "Ruby Studded Valayal", img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=300" },
+        { name: "Solid 22k Gold Kada", img: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=300" }
+      ]
+    };
+
+    async function getLatestVideoId() {
+      try {
+        const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'video/'&orderBy=modifiedTime desc&pageSize=1&fields=files(id)&key=${API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        return (data.files && data.files.length > 0) ? data.files[0].id : null;
+      } catch (error) {
+        console.error("Drive Fetch Error:", error);
+        return null;
+      }
+    }
+
+    window.addEventListener("load", () => {
+      const videoEl = document.querySelector("#driveVideo");
+      const videoPlane = document.querySelector("#videoPlane");
+      const target = document.querySelector("#target1");
+      const toggleButton = document.querySelector("#toggleButton");
+      const buttonsContainer = document.querySelector("#planButtons");
+      const curtain = document.querySelector("#blackCurtain");
+      const sceneEl = document.querySelector('a-scene');
+
+      // Floating items & badges
+      const badgeText = document.querySelector("#badgeText");
+      const floatLeft = document.querySelector("#floatLeft");
+      const floatRight = document.querySelector("#floatRight");
+      const floatTop = document.querySelector("#floatTop");
+      const catButtons = document.querySelectorAll(".cat-btn");
+
+      let isPlaying = false;
+      let currentCategory = "bridal";
+
+      // Function to swap category items on the floating planes
+      function updateFloatingCatalog(category) {
+        currentCategory = category;
+        const items = CATALOG_DATA[category];
+        if (!items) return;
+
+        // Set image textures and data
+        floatLeft.querySelector('a-plane').setAttribute('material', `src: url(${items[0].img}); transparent: true; opacity: 0.95;`);
+        floatLeft.dataset.name = items[0].name;
+
+        floatRight.querySelector('a-plane').setAttribute('material', `src: url(${items[1].img}); transparent: true; opacity: 0.95;`);
+        floatRight.dataset.name = items[1].name;
+
+        floatTop.querySelector('a-plane').setAttribute('material', `src: url(${items[2].img}); transparent: true; opacity: 0.95;`);
+        floatTop.dataset.name = items[2].name;
+
+        badgeText.setAttribute("value", `${category.toUpperCase()} | Tap item to inspect`);
+      }
+
+      // Handle category switching
+      catButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          catButtons.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          updateFloatingCatalog(btn.dataset.category);
+        });
+      });
+
+      // Handle tap on floating jewelry items
+      [floatLeft, floatRight, floatTop].forEach(entity => {
+        entity.addEventListener("click", () => {
+          const itemName = entity.dataset.name || "Selected Piece";
+          badgeText.setAttribute("value", `Selected: ${itemName}`);
+          
+          // Quick scale bounce to give feedback
+          entity.setAttribute('animation__tap', {
+            property: 'scale',
+            to: '1.18 1.18 1.18',
+            dur: 200,
+            dir: 'alternate',
+            loop: 1
+          });
+        });
+      });
+
+      // Initialize with bridal category
+      updateFloatingCatalog("bridal");
+
+      function dismissCurtain() {
+        if (curtain) {
+          curtain.style.opacity = "0";
+          setTimeout(() => { curtain.style.display = "none"; }, 600);
+        }
+      }
+
+      sceneEl.addEventListener("arReady", dismissCurtain);
+      sceneEl.addEventListener("arError", (err) => {
+        console.error("MindAR Error:", err);
+        dismissCurtain();
+      });
+
+      function adjustPlaneToVideoRatio() {
+        if (!videoPlane || !videoEl) return;
+        const w = videoEl.videoWidth;
+        const h = videoEl.videoHeight;
+
+        if (w > 0 && h > 0) {
+          const aspectRatio = w / h;
+          const targetWidth = aspectRatio >= 1 ? 1 : aspectRatio;
+          const targetHeight = aspectRatio >= 1 ? (1 / aspectRatio) : 1;
+
+          videoPlane.setAttribute('geometry', {
+            primitive: 'plane',
+            width: targetWidth,
+            height: targetHeight
+          });
+        }
+      }
+
+      videoEl.addEventListener('loadedmetadata', adjustPlaneToVideoRatio);
+      videoEl.addEventListener('playing', () => {
+        adjustPlaneToVideoRatio();
+        if (videoPlane) videoPlane.setAttribute('visible', 'true');
+      });
+
+      target.addEventListener("targetFound", async () => {
+        document.body.classList.add("found");
+        buttonsContainer.style.display = "flex";
+        const fileId = await getLatestVideoId();
+        if (fileId) {
+          const newSrc = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
+          if (videoEl.src !== newSrc) {
+            videoEl.src = newSrc;
+            videoEl.load();
+          }
+        }
+      });
+
+      target.addEventListener("targetLost", () => {
+        document.body.classList.remove("found");
+        videoEl.pause();
+        if (videoPlane) videoPlane.setAttribute('visible', 'false');
+        isPlaying = false;
+        toggleButton.textContent = "▶ Play Video";
+      });
+
+      toggleButton.addEventListener("click", async () => {
+        try {
+          if (!isPlaying) {
+            videoEl.muted = false;
+            await videoEl.play();
+            toggleButton.textContent = "⏸ Pause Video";
+            isPlaying = true;
+          } else {
+            videoEl.pause();
+            toggleButton.textContent = "▶ Play Video";
+            isPlaying = false;
+          }
+        } catch (err) {
+          console.error("Playback error:", err);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
