@@ -202,7 +202,8 @@
       pointer-events: none;
     }
 
-    body.found .button-panel {
+    body.found .button-panel,
+    body.catalog-open .button-panel {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
       pointer-events: auto;
@@ -259,6 +260,9 @@
       transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* Catalog sheet visibility is controlled ONLY by the .open class below,
+       so it stays visible/live regardless of whether the AR target is
+       currently found or lost. */
     #catalogSheet.open {
       transform: translateY(0);
     }
@@ -533,8 +537,17 @@
         });
       });
 
-      openCatalogBtn.addEventListener("click", () => catalogSheet.classList.add("open"));
-      closeCatalogBtn.addEventListener("click", () => catalogSheet.classList.remove("open"));
+      // Opening the catalog marks it as "live" via body.catalog-open,
+      // which keeps the button panel visible even if the target is lost.
+      openCatalogBtn.addEventListener("click", () => {
+        catalogSheet.classList.add("open");
+        document.body.classList.add("catalog-open");
+      });
+
+      closeCatalogBtn.addEventListener("click", () => {
+        catalogSheet.classList.remove("open");
+        document.body.classList.remove("catalog-open");
+      });
 
       function dismissCurtain() {
         if (curtain) {
@@ -586,9 +599,10 @@
         }
       });
 
+      // NOTE: catalog sheet is intentionally NOT closed here anymore.
+      // It stays open/live even after the AR target leaves the camera view.
       target.addEventListener("targetLost", () => {
         document.body.classList.remove("found");
-        catalogSheet.classList.remove("open");
         videoEl.pause();
         if (videoPlane) videoPlane.setAttribute('visible', 'false');
         isPlaying = false;
