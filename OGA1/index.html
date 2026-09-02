@@ -2,283 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JEWELS-AI | Live Drive AR</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    :root {
-      --deep: #130821;
-      --deep-2: #1f0d33;
-      --brand-purple: #5E0F8B;
-      --brand-purple-dark: #2c0a49;
-      --gold: #D4AF37;
-      --gold-soft: #F0D687;
-      --cream: #F5EFE6;
-      --cream-dim: rgba(245, 239, 230, 0.62);
-      --glass: rgba(245, 239, 230, 0.08);
-      --glass-border: rgba(212, 175, 55, 0.35);
-    }
-
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      background: var(--deep);
+      background: #000;
       overflow: hidden;
-      font-family: 'Manrope', sans-serif;
-      color: var(--cream);
-      -webkit-tap-highlight-color: transparent;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* ---------- Loading curtain ---------- */
     #blackCurtain {
       position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(circle at 50% 40%, var(--deep-2) 0%, var(--deep) 70%);
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
       z-index: 9999;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      gap: 22px;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.5s ease;
       pointer-events: none;
-    }
-
-    .gem-loader {
-      width: 56px;
-      height: 56px;
-      animation: gemSpin 2.6s ease-in-out infinite;
-    }
-
-    .gem-loader path {
-      fill: none;
-      stroke: var(--gold);
-      stroke-width: 1.4;
-      stroke-linejoin: round;
-      filter: drop-shadow(0 0 6px rgba(212,175,55,0.55));
-    }
-
-    @keyframes gemSpin {
-      0%   { transform: rotate(0deg) scale(1); }
-      50%  { transform: rotate(180deg) scale(1.08); }
-      100% { transform: rotate(360deg) scale(1); }
     }
 
     #loader {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 500;
-      font-style: italic;
-      font-size: 19px;
-      letter-spacing: 2px;
-      color: var(--cream);
+      color: white;
       text-align: center;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-
-    #loader span {
-      display: block;
-      font-family: 'Manrope', sans-serif;
-      font-style: normal;
-      font-size: 10px;
-      letter-spacing: 4px;
+      font-size: 18px;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--gold-soft);
-      margin-top: 6px;
+      animation: pulse 1.5s infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 0.55; }
+      0%, 100% { opacity: 0.4; }
       50% { opacity: 1; }
     }
 
-    /* ---------- Brand mark ---------- */
-    #brandMark {
-      position: fixed;
-      top: max(18px, env(safe-area-inset-top));
+    .button-panel {
+      position: absolute;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: 999px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 600;
-      font-size: 15px;
-      letter-spacing: 3px;
-      color: var(--gold-soft);
-      pointer-events: none;
-      transition: opacity 0.4s ease;
-    }
-
-    #brandMark::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 8px var(--gold);
-    }
-
-    /* ---------- Scan hint / viewfinder ---------- */
-    #scanHint {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 400;
-      width: min(64vw, 260px);
-      aspect-ratio: 1;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-      pointer-events: none;
-    }
-
-    #scanHint .corner {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      border: 2px solid var(--gold);
-      opacity: 0.85;
-    }
-    #scanHint .tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 6px 0 0 0; }
-    #scanHint .tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 6px 0 0; }
-    #scanHint .bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 6px; }
-    #scanHint .br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 6px 0; }
-
-    #scanHint .scanline {
-      position: absolute;
-      left: 4px;
-      right: 4px;
-      height: 1.5px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      box-shadow: 0 0 8px var(--gold);
-      animation: scanMove 2.2s ease-in-out infinite;
-    }
-
-    @keyframes scanMove {
-      0%   { top: 6%; opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { top: 92%; opacity: 0; }
-    }
-
-    #scanHint p {
-      position: absolute;
-      bottom: -34px;
-      width: 100%;
-      text-align: center;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--cream-dim);
-    }
-
-    body.found #scanHint,
-    body.found #brandMark {
-      opacity: 0;
-    }
-
-    /* ---------- Bottom control panel ---------- */
-    .button-panel {
-      position: fixed;
-      bottom: max(28px, env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%) translateY(16px);
-      display: flex;
-      opacity: 0;
+      display: none;
       z-index: 100;
-      transition: opacity 0.45s ease, transform 0.45s ease;
-      pointer-events: none;
-    }
-
-    body.found .button-panel {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      pointer-events: auto;
     }
 
     .plan-button {
-      position: relative;
-      overflow: hidden;
-      padding: 15px 34px;
-      font-family: 'Manrope', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      border: 1px solid var(--glass-border);
-      border-radius: 999px;
-      background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
-      color: var(--cream);
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #5E0F8B 0%, #3e0a5c 100%);
+      color: #fff;
       cursor: pointer;
-      min-width: 200px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
-      backdrop-filter: blur(6px);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      min-width: 180px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
 
-    .plan-button:active {
-      transform: scale(0.97);
-    }
-
-    .plan-button::after {
-      content: "";
-      position: absolute;
-      top: 0; left: -60%;
-      width: 40%; height: 100%;
-      background: linear-gradient(120deg, transparent, rgba(212,175,55,0.35), transparent);
-      transform: skewX(-20deg);
-      animation: shimmer 3.2s ease-in-out infinite;
-    }
-
-    @keyframes shimmer {
-      0%   { left: -60%; }
-      45%  { left: 130%; }
-      100% { left: 130%; }
-    }
-
-    /* ---------- Instagram / social button ---------- */
     #instagramButton {
       position: fixed;
-      bottom: max(25px, env(safe-area-inset-bottom));
-      right: 20px;
-      width: 48px;
-      height: 48px;
+      bottom: 25px;
+      right: 25px;
+      width: 50px;
+      height: 50px;
       z-index: 1000;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       text-decoration: none;
-      transition: transform 0.15s ease;
     }
 
-    #instagramButton:active { transform: scale(0.93); }
-
     #instagramButton img {
-      width: 24px;
-      height: 24px;
-      filter: sepia(1) saturate(3) hue-rotate(-10deg) brightness(1.15);
+      width: 35px;
+      height: 35px;
     }
 
     /* REMOVE A-FRAME VR BUTTON COMPLETELY */
@@ -290,14 +98,9 @@
       pointer-events: none !important;
     }
 
+    /* Hide only MindAR overlay icons without killing camera DOM */
     .mindar-ui-loading, .mindar-ui-compatibility {
       display: none !important;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .gem-loader, #loader, #scanHint .scanline, .plan-button::after {
-        animation: none !important;
-      }
     }
   </style>
 </head>
@@ -305,21 +108,7 @@
 <body>
 
   <div id="blackCurtain">
-    <svg class="gem-loader" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28 4 L48 20 L28 52 L8 20 Z M8 20 L48 20 M18 20 L28 4 L38 20 M18 20 L28 52 M38 20 L28 52" />
-    </svg>
-    <div id="loader">Initializing<span>Camera &amp; AR</span></div>
-  </div>
-
-  <div id="brandMark">JEWELS·AI</div>
-
-  <div id="scanHint">
-    <div class="corner tl"></div>
-    <div class="corner tr"></div>
-    <div class="corner bl"></div>
-    <div class="corner br"></div>
-    <div class="scanline"></div>
-    <p>Align with drive card</p>
+    <div id="loader">Initializing Camera & AR...</div>
   </div>
 
   <a href="https://www.instagram.com/overlay_gifts_ai/" target="_blank" id="instagramButton">
@@ -327,7 +116,7 @@
   </a>
 
   <div class="button-panel" id="planButtons">
-    <button class="plan-button" id="toggleButton">▶ Play Video</button>
+    <button class="plan-button" id="toggleButton">▶️ Play Video</button>
   </div>
 
   <a-scene
@@ -390,7 +179,7 @@
       function dismissCurtain() {
         if (curtain) {
           curtain.style.opacity = "0";
-          setTimeout(() => { curtain.style.display = "none"; }, 600);
+          setTimeout(() => { curtain.style.display = "none"; }, 500);
         }
       }
 
@@ -425,8 +214,7 @@
       });
 
       target.addEventListener("targetFound", async () => {
-        document.body.classList.add("found");
-        buttonsContainer.style.display = "flex";
+        buttonsContainer.style.display = "block";
         const fileId = await getLatestVideoId();
         if (fileId) {
           const newSrc = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
@@ -438,11 +226,11 @@
       });
 
       target.addEventListener("targetLost", () => {
-        document.body.classList.remove("found");
+        buttonsContainer.style.display = "none";
         videoEl.pause();
         if (videoPlane) videoPlane.setAttribute('visible', 'false');
         isPlaying = false;
-        toggleButton.textContent = "▶ Play Video";
+        toggleButton.textContent = "▶️ Play Video";
       });
 
       toggleButton.addEventListener("click", async () => {
@@ -454,7 +242,7 @@
             isPlaying = true;
           } else {
             videoEl.pause();
-            toggleButton.textContent = "▶ Play Video";
+            toggleButton.textContent = "▶️ Play Video";
             isPlaying = false;
           }
         } catch (err) {
