@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>JEWELS-AI | Live Drive AR</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Orbitron:wght@600;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    :root {
+      --deep: #090312;
+      --deep-card: rgba(18, 8, 33, 0.72);
+      --brand-purple: #7212B0;
+      --brand-purple-dark: #2c0a49;
+      --gold: #E5C158;
+      --gold-soft: #F9E7A2;
+      --gold-glow: rgba(229, 193, 88, 0.45);
+      --cream: #F5EFE6;
+      --cream-dim: rgba(245, 239, 230, 0.65);
+      --glass-border: rgba(229, 193, 88, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--deep);
+      overflow: hidden;
+      font-family: 'Manrope', sans-serif;
+      color: var(--cream);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* Loading Curtain */
+    #blackCurtain {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 40%, #1f0d33 0%, var(--deep) 70%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+
+    .gem-loader {
+      width: 56px;
+      height: 56px;
+      animation: gemSpin 2.6s ease-in-out infinite;
+    }
+
+    .gem-loader path {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.5;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 8px var(--gold-glow));
+    }
+
+    @keyframes gemSpin {
+      0%   { transform: rotate(0deg) scale(1); }
+      50%  { transform: rotate(180deg) scale(1.08); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    #loader {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-style: italic;
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--cream);
+      text-align: center;
+    }
+
+    #loader span {
+      display: block;
+      font-family: 'Manrope', sans-serif;
+      font-style: normal;
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      margin-top: 6px;
+    }
+
+    /* Brand Watermark */
+    #brandMark {
+      position: fixed;
+      top: max(18px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: rgba(18, 8, 33, 0.7);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      backdrop-filter: blur(12px);
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: var(--gold-soft);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #brandMark::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+
+    /* Target Scanner Guidance */
+    #scanHint {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 400;
+      width: min(64vw, 260px);
+      aspect-ratio: 1;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    #scanHint .corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--gold);
+      opacity: 0.85;
+      filter: drop-shadow(0 0 4px var(--gold-glow));
+    }
+    #scanHint .tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 6px 0 0 0; }
+    #scanHint .tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 6px 0 0; }
+    #scanHint .bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 6px; }
+    #scanHint .br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 6px 0; }
+
+    #scanHint .scanline {
+      position: absolute;
+      left: 4px;
+      right: 4px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      box-shadow: 0 0 12px var(--gold);
+      animation: scanMove 2.2s ease-in-out infinite;
+    }
+
+    @keyframes scanMove {
+      0%   { top: 6%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 92%; opacity: 0; }
+    }
+
+    #scanHint p {
+      position: absolute;
+      bottom: -36px;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+    }
+
+    body.found #scanHint,
+    body.found #brandMark {
+      opacity: 0;
+    }
+
+    /* Bottom Control Bar */
+    .button-panel {
+      position: fixed;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      display: flex;
+      gap: 12px;
+      opacity: 0;
+      z-index: 100;
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    body.found .button-panel,
+    body.catalog-open .button-panel {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .plan-button {
+      padding: 13px 24px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+      color: var(--cream);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      white-space: nowrap;
+    }
+
+    .plan-button.catalog-trigger {
+      background: rgba(18, 8, 33, 0.85);
+      border: 1px solid var(--gold);
+      color: var(--gold-soft);
+    }
+
+    /* Catalogue Overlay */
+    #catalogSheet {
+      position: fixed;
+      inset: 0;
+      height: 100dvh;
+      background: radial-gradient(circle at 50% 10%, rgba(56, 17, 94, 0.4) 0%, rgba(9, 3, 18, 0.98) 75%);
+      backdrop-filter: blur(28px);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%) scale(0.98);
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease;
+      overflow: hidden;
+    }
+
+    #catalogSheet.open {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+
+    .sheet-sticky-top {
+      padding-top: env(safe-area-inset-top);
+      background: linear-gradient(180deg, rgba(14, 5, 26, 0.95) 0%, rgba(14, 5, 26, 0.6) 85%, transparent 100%);
+      border-bottom: 1px solid rgba(229, 193, 88, 0.15);
+      flex-shrink: 0;
+    }
+
+    .sheet-handle-wrap {
+      width: 100%;
+      padding: 10px 0 4px;
+      display: flex;
+      justify-content: center;
+      cursor: grab;
+    }
+
+    .sheet-handle {
+      width: 48px;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      border-radius: 999px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 22px 14px;
+    }
+
+    .sheet-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: #FFFFFF;
+    }
+
+    .sheet-title span {
+      display: block;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 4px;
+    }
+
+    .close-btn {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      border-radius: 50%;
+      color: var(--gold-soft);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .search-wrap {
+      padding: 0 22px 12px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(229, 193, 88, 0.2);
+      border-radius: 14px;
+      color: var(--cream);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 36px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      stroke: var(--gold);
+      pointer-events: none;
+    }
+
+    .category-scroll {
+      display: flex;
+      gap: 10px;
+      padding: 2px 22px 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .category-scroll::-webkit-scrollbar { display: none; }
+
+    .category-chip {
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(229, 193, 88, 0.2);
+      color: var(--cream-dim);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .category-chip.active {
+      background: linear-gradient(135deg, var(--gold) 0%, #b89324 100%);
+      color: #0c0517;
+      border-color: var(--gold-soft);
+      font-weight: 800;
+    }
+
+    .catalog-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 16px 22px calc(40px + env(safe-area-inset-bottom));
+      overflow-y: auto;
+    }
+
+    .catalog-card {
+      background: var(--deep-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .catalog-card .img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #190a2a;
+    }
+
+    .catalog-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .catalog-card .tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .catalog-card .name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cream);
+    }
+
+    .catalog-card .price {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--gold-soft);
+      margin-top: auto;
+    }
+
+    /* Modal */
+    #productModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 3, 18, 0.85);
+      backdrop-filter: blur(14px);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #productModal.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 340px;
+      background: radial-gradient(circle at 50% 0%, #290f42 0%, #120722 80%);
+      border: 1px solid var(--gold);
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .modal-img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .modal-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    .modal-purity {
+      font-size: 12px;
+      color: var(--gold-soft);
+    }
+
+    .modal-desc {
+      font-size: 12px;
+      color: var(--cream-dim);
+      line-height: 1.4;
+    }
+
+    .modal-action-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: #FFFFFF;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modal-close-link {
+      text-align: center;
+      font-size: 12px;
+      color: var(--cream-dim);
+      cursor: pointer;
+    }
+
+    .a-enter-vr, .a-enter-ar, .a-orientation-modal, .mindar-ui-loading, .mindar-ui-compatibility {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="blackCurtain">
+    <svg class="gem-loader" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 4 L48 20 L28 52 L8 20 Z M8 20 L48 20 M18 20 L28 4 L38 20 M18 20 L28 52 M38 20 L28 52" />
+    </svg>
+    <div id="loader">JEWELS·AI<span>Initializing AR Hologram</span></div>
+  </div>
+
+  <div id="brandMark">JEWELS·AI</div>
+
+  <div id="scanHint">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="scanline"></div>
+    <p>Align with drive card</p>
+  </div>
+
+  <div class="button-panel" id="planButtons">
+    <button class="plan-button" id="toggleButton">▶ Play Video</button>
+    <button class="plan-button catalog-trigger" id="openCatalogBtn">✦ View Catalogue</button>
+  </div>
+
+  <div id="catalogSheet">
+    <div class="sheet-sticky-top">
+      <div class="sheet-handle-wrap" id="sheetHandle">
+        <div class="sheet-handle"></div>
+      </div>
+      <div class="sheet-header">
+        <div class="sheet-title">Collection Vault<span>Live Showcase</span></div>
+        <button class="close-btn" id="closeCatalogBtn">&times;</button>
+      </div>
+
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" class="search-input" id="catalogSearch" placeholder="Search live collection..." autocomplete="off" />
+      </div>
+
+      <div class="category-scroll" id="categoryTabs">
+        <button class="category-chip active" data-cat="all">All Vault</button>
+        <button class="category-chip" data-cat="bangles">Bangles</button>
+        <button class="category-chip" data-cat="bridal">Bridal</button>
+        <button class="category-chip" data-cat="necklace">Necklace</button>
+        <button class="category-chip" data-cat="rings">Rings</button>
+        <button class="category-chip" data-cat="oga1">OGA1</button>
+      </div>
+    </div>
+
+    <div class="catalog-grid" id="catalogList"></div>
+  </div>
+
+  <div id="productModal">
+    <div class="modal-box">
+      <div class="modal-img-wrap">
+        <img id="modalImg" src="" alt="Jewelry Preview" />
+      </div>
+      <div>
+        <div class="modal-purity" id="modalPurity"></div>
+        <div class="modal-title" id="modalName"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+      </div>
+      <button class="modal-action-btn" id="modalWhatsAppBtn">Inquire via WhatsApp</button>
+      <div class="modal-close-link" id="modalCloseBtn">Back to Vault</div>
+    </div>
+  </div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind; uiLoading: no; uiError: no; filterMinCF:0.0001; filterBeta: 0.001;"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    renderer="antialias: true; alpha: true">
+
+    <a-assets>
+      <video id="driveVideo" playsinline webkit-playsinline preload="auto" loop crossorigin="anonymous"></video>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity id="target1" mindar-image-target="targetIndex: 0">
+      <a-plane id="videoPlane" width="1" height="1" visible="false" material="src: #driveVideo; side: double; transparent: true"></a-plane>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxy00k2Wyp-e-bfmeiaUaR8teIW36YnFpRmRILXoxZSuG_4UpCTObzLDxWSCvuPAbOt/exec";
+    const STORE_WHATSAPP = "919999999999"; // Enter your showroom WhatsApp contact
+
+    let catalogItems = [];
+    let isPlaying = false;
+    let activeCategory = "all";
+    let selectedProduct = null;
+
+    // Fetch Live Products from Google Sheets & Drive via Apps Script
+    async function loadLiveCatalogue() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getCatalogue`);
+        const json = await res.json();
+        if (json.status === "success" && json.items) {
+          catalogItems = json.items;
+          renderCatalog();
+        }
+      } catch (err) {
+        console.warn("Live catalogue fallback initialized", err);
+      }
+    }
+
+    // Retrieve active AR Video Track for card target
+    async function loadCardVideo() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getCardVideo&category=Bridal Collection`);
+        const json = await res.json();
+        if (json.status === "success" && json.videoUrl) {
+          const videoEl = document.querySelector("#driveVideo");
+          if (videoEl.src !== json.videoUrl) {
+            videoEl.src = json.videoUrl;
+            videoEl.load();
+          }
+        }
+      } catch (e) {
+        console.warn("Could not reach video stream endpoint", e);
+      }
+    }
+
+    const videoEl = document.querySelector("#driveVideo");
+    const videoPlane = document.querySelector("#videoPlane");
+    const target = document.querySelector("#target1");
+    const toggleButton = document.querySelector("#toggleButton");
+    const curtain = document.querySelector("#blackCurtain");
+    const sceneEl = document.querySelector('a-scene');
+
+    const openCatalogBtn = document.querySelector("#openCatalogBtn");
+    const closeCatalogBtn = document.querySelector("#closeCatalogBtn");
+    const catalogSheet = document.querySelector("#catalogSheet");
+    const catalogList = document.querySelector("#catalogList");
+    const categoryTabs = document.querySelectorAll(".category-chip");
+    const catalogSearch = document.querySelector("#catalogSearch");
+
+    const productModal = document.querySelector("#productModal");
+    const modalImg = document.querySelector("#modalImg");
+    const modalName = document.querySelector("#modalName");
+    const modalPurity = document.querySelector("#modalPurity");
+    const modalDesc = document.querySelector("#modalDesc");
+    const modalWhatsAppBtn = document.querySelector("#modalWhatsAppBtn");
+    const modalCloseBtn = document.querySelector("#modalCloseBtn");
+
+    function renderCatalog() {
+      const query = (catalogSearch.value || "").trim().toLowerCase();
+      catalogList.innerHTML = "";
+
+      const filtered = catalogItems.filter(item => {
+        const matchesCat = activeCategory === "all" || item.category.toLowerCase().includes(activeCategory);
+        const matchesQuery = !query || item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query);
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        catalogList.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--cream-dim);">
+            No matching jewellery found in this vault category.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "catalog-card";
+        card.innerHTML = `
+          <div class="img-wrap">
+            <img src="${item.img}" alt="${item.name}" loading="lazy" />
+          </div>
+          <div class="tag">${item.category}</div>
+          <div class="name">${item.name}</div>
+          <div class="price">${item.purity}</div>
+        `;
+
+        card.addEventListener("click", () => {
+          selectedProduct = item;
+          modalImg.src = item.img;
+          modalName.textContent = item.name;
+          modalPurity.textContent = item.purity;
+          modalDesc.textContent = item.description || "";
+          productModal.classList.add("visible");
+        });
+
+        catalogList.appendChild(card);
+      });
+    }
+
+    categoryTabs.forEach(chip => {
+      chip.addEventListener("click", () => {
+        categoryTabs.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeCategory = chip.dataset.cat;
+        renderCatalog();
+      });
+    });
+
+    catalogSearch.addEventListener("input", renderCatalog);
+
+    openCatalogBtn.addEventListener("click", () => {
+      catalogSheet.classList.add("open");
+      document.body.classList.add("catalog-open");
+    });
+
+    closeCatalogBtn.addEventListener("click", () => {
+      catalogSheet.classList.remove("open");
+      document.body.classList.remove("catalog-open");
+    });
+
+    modalCloseBtn.addEventListener("click", () => productModal.classList.remove("visible"));
+    modalWhatsAppBtn.addEventListener("click", () => {
+      if (!selectedProduct) return;
+      const text = encodeURIComponent(`Hi, I am inquiring about *${selectedProduct.name}* (${selectedProduct.purity}) from your Jewels-AI AR Showcase!`);
+      window.open(`https://wa.me/${STORE_WHATSAPP}?text=${text}`, "_blank");
+    });
+
+    sceneEl.addEventListener("arReady", () => {
+      curtain.style.opacity = "0";
+      setTimeout(() => { curtain.style.display = "none"; }, 600);
+      loadLiveCatalogue();
+    });
+
+    function adjustPlaneRatio() {
+      if (!videoPlane || !videoEl) return;
+      const w = videoEl.videoWidth;
+      const h = videoEl.videoHeight;
+      if (w > 0 && h > 0) {
+        const ratio = w / h;
+        videoPlane.setAttribute('geometry', {
+          primitive: 'plane',
+          width: ratio >= 1 ? 1 : ratio,
+          height: ratio >= 1 ? (1 / ratio) : 1
+        });
+      }
+    }
+
+    videoEl.addEventListener('loadedmetadata', adjustPlaneRatio);
+    videoEl.addEventListener('playing', () => {
+      adjustPlaneRatio();
+      videoPlane.setAttribute('visible', 'true');
+    });
+
+    target.addEventListener("targetFound", () => {
+      document.body.classList.add("found");
+      loadCardVideo();
+    });
+
+    target.addEventListener("targetLost", () => {
+      document.body.classList.remove("found");
+      videoEl.pause();
+      videoPlane.setAttribute('visible', 'false');
+      isPlaying = false;
+      toggleButton.textContent = "▶ Play Video";
+    });
+
+    toggleButton.addEventListener("click", async () => {
+      try {
+        if (!isPlaying) {
+          videoEl.muted = false;
+          await videoEl.play();
+          toggleButton.textContent = "⏸ Pause Video";
+          isPlaying = true;
+        } else {
+          videoEl.pause();
+          toggleButton.textContent = "▶ Play Video";
+          isPlaying = false;
+        }
+      } catch (err) {
+        console.error("Playback error:", err);
+      }
+    });
+  </script>
+</body>
+</html>
