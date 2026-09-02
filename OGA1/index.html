@@ -239,17 +239,13 @@
       transform: scale(0.96);
     }
 
-    /* ---------- Interactive Catalog Drawer ---------- */
+    /* ---------- Full-Screen Catalog Drawer ---------- */
     #catalogSheet {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-height: 70vh;
-      height: 480px;
-      background: rgba(19, 8, 33, 0.95);
-      border-top: 1px solid var(--gold);
-      border-radius: 24px 24px 0 0;
+      inset: 0;
+      height: 100dvh;
+      height: 100vh; /* fallback for browsers without dvh */
+      background: linear-gradient(180deg, rgba(31,13,51,0.97) 0%, rgba(19,8,33,0.98) 100%);
       box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -257,7 +253,8 @@
       display: flex;
       flex-direction: column;
       transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overscroll-behavior: contain;
     }
 
     /* Catalog sheet visibility is controlled ONLY by the .open class below,
@@ -267,45 +264,99 @@
       transform: translateY(0);
     }
 
+    #catalogSheet.dragging {
+      transition: none;
+    }
+
+    .sheet-sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(19, 8, 33, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding-top: env(safe-area-inset-top);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
     .sheet-handle {
       width: 44px;
       height: 4px;
       background: var(--gold-soft);
       border-radius: 999px;
-      margin: 12px auto 6px;
+      margin: 12px auto 4px;
       opacity: 0.6;
-      cursor: pointer;
+      cursor: grab;
+      touch-action: none;
     }
 
     .sheet-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
+      padding: 6px 20px 12px;
     }
 
     .sheet-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 600;
       color: var(--gold-soft);
       letter-spacing: 1px;
     }
 
-    .close-btn {
-      background: none;
-      border: none;
+    .sheet-title span {
+      display: block;
+      font-family: 'Manrope', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       color: var(--cream-dim);
-      font-size: 24px;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 50%;
+      color: var(--cream);
+      font-size: 20px;
       cursor: pointer;
       line-height: 1;
+    }
+
+    /* Search */
+    .search-wrap {
+      padding: 0 20px 12px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: var(--cream);
+      font-family: 'Manrope', sans-serif;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: var(--cream-dim);
     }
 
     /* Category Pill Navigation */
     .category-scroll {
       display: flex;
       gap: 10px;
-      padding: 8px 20px 14px;
+      padding: 0 20px 14px;
       overflow-x: auto;
       scrollbar-width: none;
     }
@@ -322,6 +373,7 @@
       white-space: nowrap;
       cursor: pointer;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
 
     .category-chip.active {
@@ -333,34 +385,55 @@
 
     /* Catalog Cards Grid */
     .catalog-grid {
+      flex: 1;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 14px;
-      padding: 10px 20px 30px;
+      padding: 16px 20px calc(30px + env(safe-area-inset-bottom));
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      align-content: start;
+    }
+
+    @media (min-width: 480px) {
+      .catalog-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 720px) {
+      .catalog-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    }
+    @media (min-width: 1000px) {
+      .catalog-grid { grid-template-columns: repeat(5, 1fr); }
     }
 
     .catalog-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--glass-border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .catalog-card:active {
+      transform: scale(0.97);
+      border-color: var(--gold);
     }
 
     .catalog-card img {
       width: 100%;
       aspect-ratio: 1;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
     }
 
     .catalog-card .name {
       font-size: 13px;
       font-weight: 600;
       color: var(--cream);
+      line-height: 1.3;
     }
 
     .catalog-card .tag {
@@ -368,6 +441,15 @@
       text-transform: uppercase;
       color: var(--gold-soft);
       letter-spacing: 1px;
+    }
+
+    .catalog-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--cream-dim);
+      font-size: 13px;
+      letter-spacing: 0.5px;
     }
 
     /* Instagram button */
@@ -433,20 +515,27 @@
     <button class="plan-button catalog-trigger" id="openCatalogBtn">📖 Catalog</button>
   </div>
 
-  <!-- Bottom Sheet Catalog Drawer -->
+  <!-- Full-Screen Catalog -->
   <div id="catalogSheet">
-    <div class="sheet-handle" id="sheetHandle"></div>
-    <div class="sheet-header">
-      <div class="sheet-title">Collection Showcase</div>
-      <button class="close-btn" id="closeCatalogBtn">&times;</button>
-    </div>
+    <div class="sheet-sticky-top">
+      <div class="sheet-handle" id="sheetHandle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Collection Showcase<span>Jewels · AI Catalog</span></div>
+        <button class="close-btn" id="closeCatalogBtn" aria-label="Close catalog">&times;</button>
+      </div>
 
-    <!-- Category Tabs -->
-    <div class="category-scroll" id="categoryTabs">
-      <button class="category-chip active" data-cat="all">All</button>
-      <button class="category-chip" data-cat="bridal">Bridal</button>
-      <button class="category-chip" data-cat="necklaces">Necklaces</button>
-      <button class="category-chip" data-cat="bangles">Bangles</button>
+      <!-- Search -->
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="catalogSearch" placeholder="Search jewelry..." autocomplete="off" />
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="category-scroll" id="categoryTabs">
+        <button class="category-chip active" data-cat="all">All</button>
+        <button class="category-chip" data-cat="bridal">Bridal</button>
+        <button class="category-chip" data-cat="necklaces">Necklaces</button>
+        <button class="category-chip" data-cat="bangles">Bangles</button>
+      </div>
     </div>
 
     <!-- Dynamic Item Container -->
@@ -509,12 +598,30 @@
       const catalogSheet = document.querySelector("#catalogSheet");
       const catalogList = document.querySelector("#catalogList");
       const categoryTabs = document.querySelectorAll(".category-chip");
+      const catalogSearch = document.querySelector("#catalogSearch");
+      const sheetHandle = document.querySelector("#sheetHandle");
 
       let isPlaying = false;
+      let activeCategory = "all";
 
-      function renderCatalog(filter = "all") {
+      function renderCatalog() {
+        const query = (catalogSearch.value || "").trim().toLowerCase();
         catalogList.innerHTML = "";
-        const filtered = filter === "all" ? CATALOG_ITEMS : CATALOG_ITEMS.filter(i => i.category === filter);
+
+        const filtered = CATALOG_ITEMS.filter(item => {
+          const matchesCat = activeCategory === "all" || item.category === activeCategory;
+          const matchesQuery = !query || item.name.toLowerCase().includes(query);
+          return matchesCat && matchesQuery;
+        });
+
+        if (filtered.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "catalog-empty";
+          empty.textContent = "No pieces found. Try a different search or category.";
+          catalogList.appendChild(empty);
+          return;
+        }
+
         filtered.forEach(item => {
           const card = document.createElement("div");
           card.className = "catalog-card";
@@ -533,20 +640,54 @@
         chip.addEventListener("click", () => {
           categoryTabs.forEach(c => c.classList.remove("active"));
           chip.classList.add("active");
-          renderCatalog(chip.dataset.cat);
+          activeCategory = chip.dataset.cat;
+          renderCatalog();
         });
       });
 
-      // Opening the catalog marks it as "live" via body.catalog-open,
-      // which keeps the button panel visible even if the target is lost.
-      openCatalogBtn.addEventListener("click", () => {
+      catalogSearch.addEventListener("input", renderCatalog);
+
+      function openCatalog() {
         catalogSheet.classList.add("open");
         document.body.classList.add("catalog-open");
-      });
+      }
 
-      closeCatalogBtn.addEventListener("click", () => {
+      function closeCatalog() {
         catalogSheet.classList.remove("open");
         document.body.classList.remove("catalog-open");
+      }
+
+      // Opening the catalog marks it as "live" via body.catalog-open,
+      // which keeps the button panel visible even if the target is lost.
+      openCatalogBtn.addEventListener("click", openCatalog);
+      closeCatalogBtn.addEventListener("click", closeCatalog);
+
+      // Swipe-down-to-close on the drag handle (mobile-friendly, since the
+      // catalog is now full-screen and has no visible edge to tap outside).
+      let dragStartY = 0;
+      let dragDeltaY = 0;
+      let dragging = false;
+
+      sheetHandle.addEventListener("touchstart", (e) => {
+        dragStartY = e.touches[0].clientY;
+        dragging = true;
+        catalogSheet.classList.add("dragging");
+      }, { passive: true });
+
+      sheetHandle.addEventListener("touchmove", (e) => {
+        if (!dragging) return;
+        dragDeltaY = Math.max(0, e.touches[0].clientY - dragStartY);
+        catalogSheet.style.transform = `translateY(${dragDeltaY}px)`;
+      }, { passive: true });
+
+      sheetHandle.addEventListener("touchend", () => {
+        catalogSheet.classList.remove("dragging");
+        catalogSheet.style.transform = "";
+        if (dragDeltaY > 120) {
+          closeCatalog();
+        }
+        dragging = false;
+        dragDeltaY = 0;
       });
 
       function dismissCurtain() {
