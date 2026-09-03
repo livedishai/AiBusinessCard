@@ -25,7 +25,6 @@
       --cream-dim: rgba(245, 239, 230, 0.65);
       --glass: rgba(255, 255, 255, 0.05);
       --glass-border: rgba(229, 193, 88, 0.28);
-      --neon-cyan: #00f2fe;
     }
 
     * { box-sizing: border-box; }
@@ -40,7 +39,6 @@
       user-select: none;
     }
 
-    /* ---------- Loading Screen ---------- */
     #blackCurtain {
       position: fixed;
       inset: 0;
@@ -96,7 +94,6 @@
       margin-top: 6px;
     }
 
-    /* ---------- Brand mark ---------- */
     #brandMark {
       position: fixed;
       top: max(18px, env(safe-area-inset-top));
@@ -111,13 +108,12 @@
       border: 1px solid var(--glass-border);
       border-radius: 999px;
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       font-family: 'Cormorant Garamond', serif;
       font-weight: 600;
       font-size: 15px;
       letter-spacing: 3px;
       color: var(--gold-soft);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(229,193,88,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       pointer-events: none;
       transition: opacity 0.4s ease;
     }
@@ -131,7 +127,6 @@
       box-shadow: 0 0 8px var(--gold);
     }
 
-    /* ---------- Scan hint ---------- */
     #scanHint {
       position: fixed;
       top: 50%;
@@ -190,7 +185,6 @@
       opacity: 0;
     }
 
-    /* ---------- Bottom Control Panel ---------- */
     .button-panel {
       position: fixed;
       bottom: max(28px, env(safe-area-inset-bottom));
@@ -200,7 +194,7 @@
       gap: 12px;
       opacity: 0;
       z-index: 100;
-      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.45s ease, transform 0.45s ease;
       pointer-events: none;
     }
 
@@ -212,8 +206,6 @@
     }
 
     .plan-button {
-      position: relative;
-      overflow: hidden;
       padding: 13px 26px;
       font-family: 'Manrope', sans-serif;
       font-size: 12px;
@@ -225,9 +217,8 @@
       background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
       color: var(--cream);
       cursor: pointer;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.1);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
       backdrop-filter: blur(8px);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
       white-space: nowrap;
     }
 
@@ -238,25 +229,18 @@
       box-shadow: 0 8px 24px rgba(229,193,88,0.2);
     }
 
-    .plan-button:active {
-      transform: scale(0.96);
-    }
-
-    /* ---------- FUTURISTIC FULLSCREEN CATALOGUE ---------- */
     #catalogSheet {
       position: fixed;
       inset: 0;
       height: 100dvh;
       background: radial-gradient(circle at 50% 10%, rgba(56, 17, 94, 0.4) 0%, rgba(9, 3, 18, 0.98) 75%);
       backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
       z-index: 2000;
       display: flex;
       flex-direction: column;
       transform: translateY(100%) scale(0.98);
       opacity: 0;
       transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease;
-      overscroll-behavior: contain;
       overflow: hidden;
     }
 
@@ -265,12 +249,10 @@
       opacity: 1;
     }
 
-    /* Ambient animated holographic grid & beams */
     .catalog-bg {
       position: absolute;
       inset: 0;
       z-index: 0;
-      overflow: hidden;
       pointer-events: none;
     }
 
@@ -283,32 +265,6 @@
       background-size: 32px 32px;
       transform: perspective(500px) rotateX(60deg);
       opacity: 0.6;
-      animation: gridDrift 20s linear infinite;
-    }
-
-    @keyframes gridDrift {
-      0%   { transform: perspective(500px) rotateX(60deg) translateY(0); }
-      100% { transform: perspective(500px) rotateX(60deg) translateY(32px); }
-    }
-
-    .catalog-bg .glow-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.35;
-    }
-
-    .glow-orb-1 {
-      width: 320px; height: 320px;
-      top: -80px; right: -60px;
-      background: radial-gradient(circle, var(--brand-purple) 0%, transparent 70%);
-    }
-
-    .glow-orb-2 {
-      width: 260px; height: 260px;
-      bottom: -40px; left: -50px;
-      background: radial-gradient(circle, var(--gold) 0%, transparent 70%);
-      opacity: 0.15;
     }
 
     .sheet-sticky-top {
@@ -333,7 +289,6 @@
       height: 4px;
       background: linear-gradient(90deg, transparent, var(--gold), transparent);
       border-radius: 999px;
-      box-shadow: 0 0 10px var(--gold-glow);
     }
 
     .sheet-header {
@@ -349,7 +304,6 @@
       font-weight: 600;
       letter-spacing: 1.5px;
       color: #FFFFFF;
-      text-shadow: 0 0 20px rgba(229,193,88,0.3);
     }
 
     .sheet-title span {
@@ -374,17 +328,8 @@
       color: var(--gold-soft);
       font-size: 20px;
       cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: all 0.25s ease;
     }
 
-    .close-btn:active {
-      transform: rotate(90deg) scale(0.92);
-      border-color: var(--gold);
-      background: rgba(229,193,88,0.2);
-    }
-
-    /* Cyber Search Bar */
     .search-wrap {
       padding: 0 22px 12px;
       position: relative;
@@ -400,13 +345,6 @@
       font-family: 'Manrope', sans-serif;
       font-size: 13px;
       outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      border-color: var(--gold);
-      background: rgba(229, 193, 88, 0.06);
-      box-shadow: 0 0 18px rgba(229, 193, 88, 0.2);
     }
 
     .search-icon {
@@ -416,12 +354,10 @@
       transform: translateY(-50%);
       width: 16px;
       height: 16px;
-      opacity: 0.6;
       stroke: var(--gold);
       pointer-events: none;
     }
 
-    /* Holographic Category Selector */
     .category-scroll {
       display: flex;
       gap: 10px;
@@ -443,7 +379,6 @@
       text-transform: uppercase;
       white-space: nowrap;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
     .category-chip.active {
@@ -451,11 +386,9 @@
       color: #0c0517;
       border-color: var(--gold-soft);
       font-weight: 800;
-      box-shadow: 0 0 16px rgba(229, 193, 88, 0.45);
       transform: scale(1.04);
     }
 
-    /* Holographic Product Grid */
     .catalog-grid {
       position: relative;
       z-index: 1;
@@ -465,21 +398,7 @@
       gap: 16px;
       padding: 16px 22px calc(40px + env(safe-area-inset-bottom));
       overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
       align-content: start;
-    }
-
-    @keyframes holoCardIn {
-      from {
-        opacity: 0;
-        transform: translateY(28px) scale(0.93);
-        filter: blur(4px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-      }
     }
 
     .catalog-card {
@@ -492,27 +411,8 @@
       flex-direction: column;
       gap: 8px;
       overflow: hidden;
-      backdrop-filter: blur(12px);
-      animation: holoCardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
       cursor: pointer;
-    }
-
-    /* Cyber holographic corner trims */
-    .catalog-card::before {
-      content: "";
-      position: absolute;
-      top: 0; right: 0;
-      width: 24px; height: 24px;
-      background: linear-gradient(135deg, transparent 50%, rgba(229, 193, 88, 0.35) 50%);
-      border-top-right-radius: 18px;
-    }
-
-    .catalog-card:active {
-      transform: scale(0.96) translateY(2px);
-      border-color: var(--gold);
-      box-shadow: 0 0 25px rgba(229, 193, 88, 0.3);
     }
 
     .catalog-card .img-wrap {
@@ -528,12 +428,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
-      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .catalog-card:active img {
-      transform: scale(1.08);
     }
 
     .purity-badge {
@@ -547,8 +441,6 @@
       font-size: 9px;
       font-family: 'Orbitron', monospace;
       color: var(--gold-soft);
-      letter-spacing: 1px;
-      backdrop-filter: blur(6px);
     }
 
     .catalog-card .tag {
@@ -568,10 +460,9 @@
 
     .catalog-card .price {
       font-family: 'Orbitron', monospace;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: #FFFFFF;
-      letter-spacing: 0.5px;
       margin-top: auto;
       display: flex;
       align-items: center;
@@ -591,25 +482,19 @@
       font-size: 10px;
     }
 
-    /* ---------- WhatsApp Quick FAB ---------- */
     .social-fab {
       position: fixed;
       bottom: max(96px, calc(env(safe-area-inset-bottom) + 96px));
       right: 18px;
       z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
       opacity: 0;
-      transform: translateY(16px);
-      transition: opacity 0.45s ease, transform 0.45s ease;
+      transition: opacity 0.45s ease;
       pointer-events: none;
     }
 
     body.found .social-fab,
     body.catalog-open .social-fab {
       opacity: 1;
-      transform: translateY(0);
       pointer-events: auto;
     }
 
@@ -620,17 +505,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 12px rgba(37, 211, 102, 0.35);
-      text-decoration: none;
-      border: 1.5px solid rgba(255, 255, 255, 0.4);
       background: #25D366;
-      transition: transform 0.2s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
     }
 
-    .social-fab a:active { transform: scale(0.9); }
-    .social-fab svg { width: 24px; height: 24px; }
-
-    /* ---------- Floating Hologram Quick Inspector Modal ---------- */
     #productModal {
       position: fixed;
       inset: 0;
@@ -662,12 +540,6 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
-      transform: scale(0.9);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    #productModal.visible .modal-box {
-      transform: scale(1);
     }
 
     .modal-img-wrap {
@@ -675,7 +547,6 @@
       aspect-ratio: 1;
       border-radius: 16px;
       overflow: hidden;
-      border: 1px solid var(--glass-border);
     }
 
     .modal-img-wrap img {
@@ -705,14 +576,8 @@
       background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
       color: #FFFFFF;
       font-weight: 700;
-      letter-spacing: 1px;
       font-size: 13px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 6px 18px rgba(37,211,102,0.35);
     }
 
     .modal-close-link {
@@ -720,7 +585,6 @@
       font-size: 12px;
       color: var(--cream-dim);
       cursor: pointer;
-      padding-top: 4px;
     }
 
     .a-enter-vr, .a-enter-ar, .a-orientation-modal, .mindar-ui-loading, .mindar-ui-compatibility {
@@ -746,12 +610,12 @@
     <div class="corner bl"></div>
     <div class="corner br"></div>
     <div class="scanline"></div>
-    <p>Align with drive card</p>
+    <p>Align with card</p>
   </div>
 
   <div class="social-fab">
     <a href="https://wa.me/910000000000?text=Hi%2C%20I%20am%20exploring%20your%20Jewels%20AR%20Showcase!" target="_blank" class="fab-whatsapp" aria-label="Chat on WhatsApp">
-      <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 24 24" fill="white" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
         <path d="M12.004 2c-5.514 0-9.996 4.478-9.996 9.997 0 1.763.464 3.483 1.346 4.997L2 22l5.146-1.336a9.96 9.96 0 0 0 4.858 1.24h.004c5.514 0 9.992-4.478 9.992-9.997C21.996 6.478 17.518 2 12.004 2zm0 18.19h-.003a8.19 8.19 0 0 1-4.174-1.14l-.3-.178-3.06.795.818-2.988-.196-.307a8.185 8.185 0 0 1-1.257-4.375c0-4.527 3.685-8.211 8.213-8.211 2.193 0 4.253.855 5.804 2.406a8.153 8.153 0 0 1 2.406 5.808c0 4.528-3.684 8.19-8.251 8.19z"/>
       </svg>
@@ -764,11 +628,8 @@
   </div>
 
   <div id="catalogSheet">
-    
     <div class="catalog-bg">
       <div class="holo-grid"></div>
-      <div class="glow-orb glow-orb-1"></div>
-      <div class="glow-orb glow-orb-2"></div>
     </div>
 
     <div class="sheet-sticky-top">
@@ -777,7 +638,7 @@
       </div>
       <div class="sheet-header">
         <div class="sheet-title">Collection Vault<span>Holographic Showcase</span></div>
-        <button class="close-btn" id="closeCatalogBtn" aria-label="Close catalog">&times;</button>
+        <button class="close-btn" id="closeCatalogBtn">&times;</button>
       </div>
 
       <div class="search-wrap">
@@ -785,14 +646,16 @@
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" class="search-input" id="catalogSearch" placeholder="Search handcrafted designs..." autocomplete="off" />
+        <input type="text" class="search-input" id="catalogSearch" placeholder="Search handcrafted designs..." />
       </div>
 
       <div class="category-scroll" id="categoryTabs">
         <button class="category-chip active" data-cat="all">All Vault</button>
-        <button class="category-chip" data-cat="bridal">Bridal</button>
-        <button class="category-chip" data-cat="necklaces">Necklaces</button>
-        <button class="category-chip" data-cat="bangles">Bangles</button>
+        <button class="category-chip" data-cat="Bangles">Bangles</button>
+        <button class="category-chip" data-cat="Bridal Collection">Bridal Collection</button>
+        <button class="category-chip" data-cat="Necklace">Necklace</button>
+        <button class="category-chip" data-cat="Rings">Rings</button>
+        <button class="category-chip" data-cat="OGA1">OGA1</button>
       </div>
     </div>
 
@@ -806,7 +669,7 @@
       </div>
       <div>
         <div class="modal-purity" id="modalPurity">22K BIS HALLMARKED</div>
-        <div class="modal-title" id="modalName">Royal Kundan Choker</div>
+        <div class="modal-title" id="modalName">Product</div>
       </div>
       <button class="modal-action-btn" id="modalWhatsAppBtn">
         Inquire via WhatsApp
@@ -833,233 +696,198 @@
   </a-scene>
 
   <script>
-    const API_KEY = "AIzaSyA_mBu6emRKASkqHpLtwkdBiCQKYO3rvcw"; 
-    const FOLDER_ID = "1jRyVReP4cq7yk1VqwdFCMt0w4on4S77Q";
-    const STORE_WHATSAPP = "910000000000"; // Replace with your number
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyngfPB7bGYIKPDDJk6ZSumck8AcnX586OISrt0AfPAzzibiFNS0GmqO3QF9q5C464K/exec";
+    const STORE_WHATSAPP = "910000000000";
 
-    const CATALOG_ITEMS = [
-      { id: 1, name: "Kundan Royal Choker", category: "bridal", purity: "22K Yellow Gold", price: "₹2,45,000", img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=500" },
-      { id: 2, name: "Temple Heritage Haram", category: "necklaces", purity: "22K Antique Polish", price: "₹3,10,000", img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500" },
-      { id: 3, name: "Filigree Bridal Kadas", category: "bangles", purity: "22K Solid Gold", price: "₹1,85,000", img: "https://images.unsplash.com/photo-1611591475824-7890f576e107?w=500" },
-      { id: 4, name: "Rani Haar Polki Ensemble", category: "bridal", purity: "24K Foil Kundan", price: "₹4,20,000", img: "https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=500" }
-    ];
+    let CATALOG_ITEMS = [];
+    let activeVideoId = null;
 
-    async function getLatestVideoId() {
+    async function loadLiveFeed() {
       try {
-        const url = `https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents+and+mimeType+contains+'video/'&orderBy=modifiedTime desc&pageSize=1&fields=files(id)&key=${API_KEY}`;
-        const response = await fetch(url);
+        const response = await fetch(WEB_APP_URL);
         const data = await response.json();
-        return (data.files && data.files.length > 0) ? data.files[0].id : null;
-      } catch (error) {
-        console.error("Drive Fetch Error:", error);
-        return null;
+
+        if (data.status === "success") {
+          CATALOG_ITEMS = data.items || [];
+          activeVideoId = data.latestVideoId;
+
+          if (activeVideoId) {
+            const videoEl = document.querySelector("#driveVideo");
+            videoEl.src = `https://drive.google.com/uc?export=download&id=${activeVideoId}`;
+            videoEl.load();
+          }
+
+          renderCatalog();
+        }
+      } catch (err) {
+        console.warn("Using offline fallback mode:", err);
       }
     }
 
-    window.addEventListener("load", () => {
-      const videoEl = document.querySelector("#driveVideo");
-      const videoPlane = document.querySelector("#videoPlane");
-      const target = document.querySelector("#target1");
-      const toggleButton = document.querySelector("#toggleButton");
-      const buttonsContainer = document.querySelector("#planButtons");
-      const curtain = document.querySelector("#blackCurtain");
-      const sceneEl = document.querySelector('a-scene');
+    const videoEl = document.querySelector("#driveVideo");
+    const videoPlane = document.querySelector("#videoPlane");
+    const target = document.querySelector("#target1");
+    const toggleButton = document.querySelector("#toggleButton");
+    const buttonsContainer = document.querySelector("#planButtons");
+    const curtain = document.querySelector("#blackCurtain");
+    const sceneEl = document.querySelector('a-scene');
 
-      const openCatalogBtn = document.querySelector("#openCatalogBtn");
-      const closeCatalogBtn = document.querySelector("#closeCatalogBtn");
-      const catalogSheet = document.querySelector("#catalogSheet");
-      const catalogList = document.querySelector("#catalogList");
-      const categoryTabs = document.querySelectorAll(".category-chip");
-      const catalogSearch = document.querySelector("#catalogSearch");
-      const sheetHandle = document.querySelector("#sheetHandle");
+    const openCatalogBtn = document.querySelector("#openCatalogBtn");
+    const closeCatalogBtn = document.querySelector("#closeCatalogBtn");
+    const catalogSheet = document.querySelector("#catalogSheet");
+    const catalogList = document.querySelector("#catalogList");
+    const categoryTabs = document.querySelectorAll(".category-chip");
+    const catalogSearch = document.querySelector("#catalogSearch");
 
-      // Inspection modal elements
-      const productModal = document.querySelector("#productModal");
-      const modalImg = document.querySelector("#modalImg");
-      const modalName = document.querySelector("#modalName");
-      const modalPurity = document.querySelector("#modalPurity");
-      const modalWhatsAppBtn = document.querySelector("#modalWhatsAppBtn");
-      const modalCloseBtn = document.querySelector("#modalCloseBtn");
+    const productModal = document.querySelector("#productModal");
+    const modalImg = document.querySelector("#modalImg");
+    const modalName = document.querySelector("#modalName");
+    const modalPurity = document.querySelector("#modalPurity");
+    const modalWhatsAppBtn = document.querySelector("#modalWhatsAppBtn");
+    const modalCloseBtn = document.querySelector("#modalCloseBtn");
 
-      let isPlaying = false;
-      let activeCategory = "all";
-      let selectedProduct = null;
+    let isPlaying = false;
+    let activeCategory = "all";
+    let selectedProduct = null;
 
-      function renderCatalog() {
-        const query = (catalogSearch.value || "").trim().toLowerCase();
-        catalogList.innerHTML = "";
+    function renderCatalog() {
+      const query = (catalogSearch.value || "").trim().toLowerCase();
+      catalogList.innerHTML = "";
 
-        const filtered = CATALOG_ITEMS.filter(item => {
-          const matchesCat = activeCategory === "all" || item.category === activeCategory;
-          const matchesQuery = !query || item.name.toLowerCase().includes(query);
-          return matchesCat && matchesQuery;
+      const filtered = CATALOG_ITEMS.filter(item => {
+        const matchesCat = activeCategory === "all" || item.category.toLowerCase() === activeCategory.toLowerCase();
+        const matchesQuery = !query || item.name.toLowerCase().includes(query);
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        const empty = document.createElement("div");
+        empty.style.gridColumn = "1 / -1";
+        empty.style.textAlign = "center";
+        empty.style.padding = "60px 20px";
+        empty.style.color = "var(--cream-dim)";
+        empty.textContent = "No jewelry found in this category.";
+        catalogList.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "catalog-card";
+        card.innerHTML = `
+          <div class="img-wrap">
+            <span class="purity-badge">${item.purity ? item.purity.split(' ')[0] : '22K'}</span>
+            <img src="${item.img}" alt="${item.name}" loading="lazy" />
+          </div>
+          <div class="tag">${item.category}</div>
+          <div class="name">${item.name}</div>
+          <div class="price">
+            <span>${item.price || ''}</span>
+            <div class="action-arrow">→</div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          selectedProduct = item;
+          modalImg.src = item.img;
+          modalName.textContent = item.name;
+          modalPurity.textContent = `${item.purity || ''} ${item.price ? '• ' + item.price : ''}`;
+          productModal.classList.add("visible");
         });
 
-        if (filtered.length === 0) {
-          const empty = document.createElement("div");
-          empty.style.gridColumn = "1 / -1";
-          empty.style.textAlign = "center";
-          empty.style.padding = "60px 20px";
-          empty.style.color = "var(--cream-dim)";
-          empty.textContent = "No jewelry matching your query in the vault.";
-          catalogList.appendChild(empty);
-          return;
-        }
-
-        filtered.forEach((item, index) => {
-          const card = document.createElement("div");
-          card.className = "catalog-card";
-          card.style.animationDelay = `${index * 60}ms`;
-          card.innerHTML = `
-            <div class="img-wrap">
-              <span class="purity-badge">${item.purity.split(' ')[0]}</span>
-              <img src="${item.img}" alt="${item.name}" loading="lazy" />
-            </div>
-            <div class="tag">${item.category}</div>
-            <div class="name">${item.name}</div>
-            <div class="price">
-              <span>${item.price}</span>
-              <div class="action-arrow">→</div>
-            </div>
-          `;
-
-          card.addEventListener("click", () => {
-            selectedProduct = item;
-            modalImg.src = item.img;
-            modalName.textContent = item.name;
-            modalPurity.textContent = `${item.purity} • ${item.price}`;
-            productModal.classList.add("visible");
-          });
-
-          catalogList.appendChild(card);
-        });
-      }
-
-      renderCatalog();
-
-      categoryTabs.forEach(chip => {
-        chip.addEventListener("click", () => {
-          categoryTabs.forEach(c => c.classList.remove("active"));
-          chip.classList.add("active");
-          activeCategory = chip.dataset.cat;
-          renderCatalog();
-        });
+        catalogList.appendChild(card);
       });
+    }
 
-      catalogSearch.addEventListener("input", renderCatalog);
-
-      function openCatalog() {
-        catalogSheet.classList.add("open");
-        document.body.classList.add("catalog-open");
-      }
-
-      function closeCatalog() {
-        catalogSheet.classList.remove("open");
-        document.body.classList.remove("catalog-open");
-      }
-
-      openCatalogBtn.addEventListener("click", openCatalog);
-      closeCatalogBtn.addEventListener("click", closeCatalog);
-
-      // Modal Actions
-      modalCloseBtn.addEventListener("click", () => productModal.classList.remove("visible"));
-      modalWhatsAppBtn.addEventListener("click", () => {
-        if (!selectedProduct) return;
-        const msg = encodeURIComponent(`Hi, I'm interested in viewing the ${selectedProduct.name} (${selectedProduct.price}) from your Jewels-AI AR Showcase!`);
-        window.open(`https://wa.me/${STORE_WHATSAPP}?text=${msg}`, "_blank");
-      });
-
-      // Drag to dismiss
-      let dragStartY = 0;
-      let dragDeltaY = 0;
-      let dragging = false;
-
-      sheetHandle.addEventListener("touchstart", (e) => {
-        dragStartY = e.touches[0].clientY;
-        dragging = true;
-      }, { passive: true });
-
-      sheetHandle.addEventListener("touchmove", (e) => {
-        if (!dragging) return;
-        dragDeltaY = Math.max(0, e.touches[0].clientY - dragStartY);
-        catalogSheet.style.transform = `translateY(${dragDeltaY}px)`;
-      }, { passive: true });
-
-      sheetHandle.addEventListener("touchend", () => {
-        catalogSheet.style.transform = "";
-        if (dragDeltaY > 120) closeCatalog();
-        dragging = false;
-        dragDeltaY = 0;
-      });
-
-      function dismissCurtain() {
-        if (curtain) {
-          curtain.style.opacity = "0";
-          setTimeout(() => { curtain.style.display = "none"; }, 600);
-        }
-      }
-
-      sceneEl.addEventListener("arReady", dismissCurtain);
-      sceneEl.addEventListener("arError", dismissCurtain);
-
-      function adjustPlaneToVideoRatio() {
-        if (!videoPlane || !videoEl) return;
-        const w = videoEl.videoWidth;
-        const h = videoEl.videoHeight;
-        if (w > 0 && h > 0) {
-          const aspectRatio = w / h;
-          videoPlane.setAttribute('geometry', {
-            primitive: 'plane',
-            width: aspectRatio >= 1 ? 1 : aspectRatio,
-            height: aspectRatio >= 1 ? (1 / aspectRatio) : 1
-          });
-        }
-      }
-
-      videoEl.addEventListener('loadedmetadata', adjustPlaneToVideoRatio);
-      videoEl.addEventListener('playing', () => {
-        adjustPlaneToVideoRatio();
-        if (videoPlane) videoPlane.setAttribute('visible', 'true');
-      });
-
-      target.addEventListener("targetFound", async () => {
-        document.body.classList.add("found");
-        buttonsContainer.style.display = "flex";
-        const fileId = await getLatestVideoId();
-        if (fileId) {
-          const newSrc = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
-          if (videoEl.src !== newSrc) {
-            videoEl.src = newSrc;
-            videoEl.load();
-          }
-        }
-      });
-
-      target.addEventListener("targetLost", () => {
-        document.body.classList.remove("found");
-        videoEl.pause();
-        if (videoPlane) videoPlane.setAttribute('visible', 'false');
-        isPlaying = false;
-        toggleButton.textContent = "▶ Play Video";
-      });
-
-      toggleButton.addEventListener("click", async () => {
-        try {
-          if (!isPlaying) {
-            videoEl.muted = false;
-            await videoEl.play();
-            toggleButton.textContent = "⏸ Pause Video";
-            isPlaying = true;
-          } else {
-            videoEl.pause();
-            toggleButton.textContent = "▶ Play Video";
-            isPlaying = false;
-          }
-        } catch (err) {
-          console.error("Playback error:", err);
-        }
+    categoryTabs.forEach(chip => {
+      chip.addEventListener("click", () => {
+        categoryTabs.forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeCategory = chip.dataset.cat;
+        renderCatalog();
       });
     });
+
+    catalogSearch.addEventListener("input", renderCatalog);
+
+    openCatalogBtn.addEventListener("click", () => {
+      catalogSheet.classList.add("open");
+      document.body.classList.add("catalog-open");
+    });
+
+    closeCatalogBtn.addEventListener("click", () => {
+      catalogSheet.classList.remove("open");
+      document.body.classList.remove("catalog-open");
+    });
+
+    modalCloseBtn.addEventListener("click", () => productModal.classList.remove("visible"));
+    modalWhatsAppBtn.addEventListener("click", () => {
+      if (!selectedProduct) return;
+      const msg = encodeURIComponent(`Hi Nishanth, I'm interested in viewing the ${selectedProduct.name} from your Jewels-AI AR Showcase!`);
+      window.open(`https://wa.me/${STORE_WHATSAPP}?text=${msg}`, "_blank");
+    });
+
+    function dismissCurtain() {
+      if (curtain) {
+        curtain.style.opacity = "0";
+        setTimeout(() => { curtain.style.display = "none"; }, 600);
+      }
+    }
+
+    sceneEl.addEventListener("arReady", dismissCurtain);
+    sceneEl.addEventListener("arError", dismissCurtain);
+
+    function adjustPlaneToVideoRatio() {
+      if (!videoPlane || !videoEl) return;
+      const w = videoEl.videoWidth;
+      const h = videoEl.videoHeight;
+      if (w > 0 && h > 0) {
+        const aspectRatio = w / h;
+        videoPlane.setAttribute('geometry', {
+          primitive: 'plane',
+          width: aspectRatio >= 1 ? 1 : aspectRatio,
+          height: aspectRatio >= 1 ? (1 / aspectRatio) : 1
+        });
+      }
+    }
+
+    videoEl.addEventListener('loadedmetadata', adjustPlaneToVideoRatio);
+    videoEl.addEventListener('playing', () => {
+      adjustPlaneToVideoRatio();
+      if (videoPlane) videoPlane.setAttribute('visible', 'true');
+    });
+
+    target.addEventListener("targetFound", () => {
+      document.body.classList.add("found");
+      buttonsContainer.style.display = "flex";
+    });
+
+    target.addEventListener("targetLost", () => {
+      document.body.classList.remove("found");
+      videoEl.pause();
+      if (videoPlane) videoPlane.setAttribute('visible', 'false');
+      isPlaying = false;
+      toggleButton.textContent = "▶ Play Video";
+    });
+
+    toggleButton.addEventListener("click", async () => {
+      try {
+        if (!isPlaying) {
+          videoEl.muted = false;
+          await videoEl.play();
+          toggleButton.textContent = "⏸ Pause Video";
+          isPlaying = true;
+        } else {
+          videoEl.pause();
+          toggleButton.textContent = "▶ Play Video";
+          isPlaying = false;
+        }
+      } catch (err) {
+        console.error("Playback error:", err);
+      }
+    });
+
+    window.addEventListener("load", loadLiveFeed);
   </script>
 </body>
 </html>
